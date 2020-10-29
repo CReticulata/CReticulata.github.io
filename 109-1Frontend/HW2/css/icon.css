@@ -1,1 +1,242 @@
+.rounded-rectangle {
+    width: 62px;
+    height: 62px;
+    border-radius: 15%;
+    display: inline-block;
+    border-style: solid;
+    border-width: 3px;
+    border-color: #808080;
 
+}
+
+.frame {
+    width: 372px;
+    height: 768px;
+    border-radius: 35px;
+    border-style: solid;
+    border-width: 10px 10px 50px 10px;
+    border-color: #000000;
+
+}
+
+.frame-top-black {
+    width: 40%;
+    height: 42px;
+    margin: auto;
+    /* display: inline-block; */
+    border-width: 5px;
+    border-radius: 0px 0px 35px 35px;
+    background: #000000;
+
+}
+
+.search-bar {
+    width: 320px;
+    height: 38px;
+    display: block;
+    cursor: pointer;
+    margin: 16px auto;
+    border-style: solid;
+    border-width: 0.1px 0.5px 1.5px 0.5px;
+    border-radius: 50px;
+    border-color: #dadada;
+    background-size: 320px, 38px, cover;
+    background-image: url(../img/search_bar.jpg);
+}
+
+.circle-left {
+    width: 47px;
+    height: 47px;
+    margin: 21px 10.75px 10.75px 25.5px;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    border-radius: 50px;
+    border-color: #a7a6a6;
+    display: inline-block;
+    float: left;
+}
+
+.circle-middle {
+    width: 47px;
+    height: 47px;
+    margin: 21px 10.75px 10.75px 10.75px;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    border-radius: 50px;
+    border-color: #a7a6a6;
+    display: inline-block;
+    float: left;
+}
+
+.circle-right {
+    width: 47px;
+    height: 47px;
+    margin: 21px 25.5px 10.75px 10.75px;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    border-radius: 50px;
+    border-color: #a7a6a6;
+    display: inline-block;
+    float: left;
+}
+
+.text-left-block {
+    width: 13px;
+    height: 20px;
+    display: inline-block;
+    float: left;
+
+}
+
+.text {
+    width: 49px;
+    padding: 10px 10px 10px 10px;
+    font-size: 9px;
+    line-height: 0.01;
+    text-align: center;
+    display: inline-block;
+    float: left;
+}
+
+.line {
+    width: 337px;
+    border-style: solid;
+    border-width: 0.5px;
+    border-color: #c5c4c4;
+    margin: 80px 16px 0px 16px;
+}
+
+.i {
+    background-size: 372px, 768px, cover;
+    background-image: url("../img/background.jpg");
+}
+
+.icon {
+    background-size: 372px, 768px, cover;
+    background-image: url("../img/icon-list.jpg");
+}
+
+.i-shopee {
+    background-position: left -23.5px top -127px;
+}
+
+.i-pchome {
+    background-position: left -93px top -127px;
+}
+
+.i-chrome {
+    background-position: left -162.5px top -127px;
+}
+
+.i-calculator {
+    background-position: left -232px top -127px;
+}
+
+.i-myvideo {
+    background-position: left -301.5px top -127px;
+}
+
+/* 第一列 */
+.i-police {
+    background-position: left -23.5px top -249px;
+}
+
+.i-dawho {
+    background-position: left -93px top -249px;
+}
+
+.i-read {
+    background-position: left -162.5px top -249px;
+}
+
+.i-document {
+    background-position: left -232px top -249px;
+}
+
+.i-icolor {
+    background-position: left -301.5px top -249px;
+}
+
+/* 第二列 */
+.i-calendar {
+    background-position: left -23.5px top -356px;
+}
+
+.i-obank {
+    background-position: left -93px top -356px;
+}
+
+.i-taishinbank {
+    background-position: left -162.5px top -356px;
+}
+
+.i-taishinphoneez {
+    background-position: left -232px top -356px;
+}
+
+.i-twrailway {
+    background-position: left -301.5px top -356px;
+}
+
+/* 第三列 */
+.i-myphone {
+    background-position: left -23.5px top -463px;
+}
+
+.i-sushi {
+    background-position: left -93px top -463px;
+}
+
+.i-sinobank {
+    background-position: left -162.5px top -463px;
+}
+
+.i-esunbank {
+    background-position: left -232px top -463px;
+}
+
+.i-esunwallet {
+    background-position: left -301.5px top -463px;
+}
+
+/* 第四列 */
+.i-fami {
+    background-position: left -23.5px top -570px;
+}
+
+.i-pxpay {
+    background-position: left -93px top -570px;
+}
+
+.i-map {
+    background-position: left -162.5px top -570px;
+}
+
+.i-safe {
+    background-position: left -232px top -570px;
+}
+
+.i-emily {
+    background-position: left -301.5px top -570px;
+}
+
+/* 第五列 */
+.i-record {
+    background-position: left -23.5px top -677px;
+}
+
+.i-vieshow {
+    background-position: left -93px top -677px;
+}
+
+.i-camera {
+    background-position: left -162.5px top -677px;
+}
+
+.i-photo {
+    background-position: left -232px top -677px;
+}
+
+.i-calculator2 {
+    background-position: left -301.5px top -677px;
+}
