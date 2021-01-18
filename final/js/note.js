@@ -68,9 +68,12 @@ $(() => {
                 delbutton[i].parent().parent().parent().remove()
             })
         }
-        // $('div#'+indexnow).find('button').on('click',()=>{
-        //     $('div#'+indexnow).remove()
-        // })
+        
+        // 清除表單
+        $('#inputfoodname').val("")
+        $('#inputwhere').val("")
+        $('div.gm-style-iw-t').remove() 
+        $('#inputextra').val("")
     })
       
     $('a#login').on('click', () => {
