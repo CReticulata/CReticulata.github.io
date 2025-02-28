@@ -27,6 +27,10 @@ export const useNoteStore = defineStore('noteStore', () => {
     },
   ])
 
+  function createNote(newNote) {
+    notes.value = [...notes.value, newNote]
+  }
+
   function updateNote(newNote, index) {
     notes.value = [
       ...notes.value.slice(0, index),
@@ -42,5 +46,5 @@ export const useNoteStore = defineStore('noteStore', () => {
     ]
   }
 
-  return { notes, updateNote, deleteNote }
+  return { notes, createNote, updateNote, deleteNote }
 })

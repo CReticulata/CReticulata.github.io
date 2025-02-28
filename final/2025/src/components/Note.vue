@@ -1,12 +1,20 @@
 <script setup>
 import { ref } from 'vue'
 
+const props = defineProps({
+  isCreate: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 const note = defineModel()
 
-const isEdit = ref(false)
-const confirm = ref(false)
+const isEdit = ref(props.isCreate)
+const deleteConfirm = ref(false)
+const cancelConfirm = ref(false)
 
-const emits = defineEmits(['delete:note'])
+const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note'])
 </script>
 
 <template>
@@ -79,13 +87,17 @@ const emits = defineEmits(['delete:note'])
 
     <q-separator />
 
-    <q-card-actions align="around">
-      <q-btn flat class="text-negative action-btn" @click="confirm = true">刪除</q-btn>
+    <q-card-actions v-if="!isCreate" align="around">
+      <q-btn flat class="text-negative action-btn" @click="deleteConfirm = true">刪除</q-btn>
       <q-btn v-if="!isEdit" flat class="action-btn" @click="isEdit = true">編輯</q-btn>
       <q-btn v-else flat class="action-btn" @click="isEdit = false">儲存</q-btn>
     </q-card-actions>
+    <q-card-actions v-else align="around">
+      <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>
+      <q-btn flat class="action-btn" @click="emits('create:note')">儲存</q-btn>
+    </q-card-actions>
 
-    <q-dialog v-model="confirm" persistent>
+    <q-dialog v-model="deleteConfirm" persistent>
       <q-card>
         <q-card-section class="row items-center">
           <q-icon name="warning" color="negative" size="24px" />
@@ -95,6 +107,26 @@ const emits = defineEmits(['delete:note'])
         <q-card-actions align="right">
           <q-btn flat label="取消" color="primary" v-close-popup />
           <q-btn flat label="刪除" color="negative" v-close-popup @click="emits('delete:note')" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="cancelConfirm" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-icon name="warning" color="negative" size="24px" />
+          <span class="q-ml-sm">確定要取消新增筆記嗎？</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="取消"
+            color="negative"
+            v-close-popup
+            @click="emits('update:isCreate', false)"
+          />
+          <q-btn flat label="繼續編輯" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
