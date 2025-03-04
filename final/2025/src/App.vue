@@ -2,10 +2,13 @@
 import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { useNoteStore } from '@/stores/noteStore'
+import { onBeforeMount } from 'vue'
 
 const noteStore = useNoteStore()
 
-noteStore.updateUserLocation()
+onBeforeMount(() => {
+  noteStore.updateUserLocation()
+})
 
 function showInfo() {
   // console.log(noteStore.notesSortedByDistance)

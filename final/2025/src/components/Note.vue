@@ -127,7 +127,7 @@ const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note'])
         <q-card-actions align="right">
           <q-btn
             flat
-            label="取消"
+            label="放棄編輯"
             color="negative"
             v-close-popup
             @click="emits('update:isCreate', false)"
