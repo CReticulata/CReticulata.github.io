@@ -25,7 +25,7 @@ function showInfo() {
 
         <q-toolbar-title>美食家也可以很健忘</q-toolbar-title>
         <q-btn flat round dense icon="fa-solid fa-user" class="q-mr-sm" />
-        <q-btn class="text-black" @click="showInfo">印</q-btn>
+        <!-- <q-btn class="text-black" @click="showInfo">印</q-btn> -->
       </q-toolbar>
 
       <q-tabs align="justify" indicator-color="yellow">
@@ -40,7 +40,7 @@ function showInfo() {
       </q-page>
     </q-page-container>
 
-    <q-footer class="footer">
+    <q-footer bordered class="footer">
       <q-toolbar>
         <q-toolbar-title class="footer__title">© 2025 橘子</q-toolbar-title>
       </q-toolbar>
@@ -63,10 +63,13 @@ function showInfo() {
 }
 
 .footer {
-  background-color: $white;
+  background-color: $red;
+  height: 60px;
 
   &__title {
     color: $black;
+    font-size: 14px;
+    text-align: center;
   }
 }
 </style>

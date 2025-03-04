@@ -30,10 +30,9 @@ function onCreateNote() {
 let map
 
 async function initMap() {
-  // The location of Uluru
+  // The location of userLocation
   const position = noteStore.userLocation
   // Request needed libraries.
-  //@ts-ignore
   const { Map } = await google.maps.importLibrary('maps')
   const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
 
@@ -62,13 +61,13 @@ async function getPlaceIdAndShowInfoWindow(latLng, map) {
 
   const request = {
     // required parameters
-    fields: ['id', 'formattedAddress', 'googleMapsURI', 'location', 'displayName'],
+    fields: ['id', 'formattedAddress', 'googleMapsURI', 'location', 'displayName', 'primaryType'],
     locationRestriction: {
       center: latLng,
       radius: 50,
     },
     // optional parameters
-    includedPrimaryTypes: ['restaurant'],
+    // includedPrimaryTypes: ['dog_cafe'],
     maxResultCount: 5,
     rankPreference: SearchNearbyRankPreference.DISTANCE,
     language: 'zh_Hant',
@@ -146,8 +145,6 @@ watch(
 
 <template>
   <div>
-    <q-btn @click="isCreate = true">新增筆記</q-btn>
-
     <div id="map"></div>
 
     <q-dialog v-model="isCreate" persistent>
