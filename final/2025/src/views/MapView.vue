@@ -59,7 +59,9 @@ async function initMap() {
   })
 
   map.addListener('click', (mapsMouseEvent) => {
-    getPlaceByIdAndShowInfoWindow(mapsMouseEvent.placeId, map)
+    if (mapsMouseEvent.placeId) {
+      getPlaceByIdAndShowInfoWindow(mapsMouseEvent.placeId, map)
+    }
   })
 }
 
