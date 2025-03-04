@@ -1,6 +1,15 @@
 <script setup>
 import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import { useNoteStore } from '@/stores/noteStore'
+
+const noteStore = useNoteStore()
+
+noteStore.updateUserLocation()
+
+function showInfo() {
+  // console.log(noteStore.notesSortedByDistance)
+}
 </script>
 
 <template>
@@ -13,6 +22,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
         <q-toolbar-title>美食家也可以很健忘</q-toolbar-title>
         <q-btn flat round dense icon="fa-solid fa-user" class="q-mr-sm" />
+        <q-btn class="text-black" @click="showInfo">印</q-btn>
       </q-toolbar>
 
       <q-tabs align="justify" indicator-color="yellow">
