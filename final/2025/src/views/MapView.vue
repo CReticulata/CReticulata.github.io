@@ -26,12 +26,20 @@ function onCreateNote() {
   isCreate.value = false
 }
 
+function setNote(storeName, location, googlemapURL, address) {
+  newNote.value.storeName = storeName
+  newNote.value.location = location
+  newNote.value.googlemapURL = googlemapURL
+  newNote.value.address = address
+}
+
 // Initialize and add the map
 let map
+let infoWindow
 
 async function initMap() {
   // The location of userLocation
-  const position = noteStore.userLocation
+  const userLocation = noteStore.userLocation
   // Request needed libraries.
   const { Map } = await google.maps.importLibrary('maps')
   const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
@@ -39,76 +47,61 @@ async function initMap() {
   // The map, centered at userLocation
   map = new Map(document.getElementById('map'), {
     zoom: 18,
-    center: position,
+    center: userLocation,
     mapId: 'DEMO_MAP_ID',
   })
 
   // The marker, positioned at userLocation
   const marker = new AdvancedMarkerElement({
     map: map,
-    position: position,
+    position: userLocation,
     title: '目前位置',
   })
 
   map.addListener('click', (mapsMouseEvent) => {
-    const clickedLatLng = mapsMouseEvent.latLng
-    getPlaceIdAndShowInfoWindow(clickedLatLng, map)
+    getPlaceByIdAndShowInfoWindow(mapsMouseEvent.placeId, map)
   })
 }
 
-async function getPlaceIdAndShowInfoWindow(latLng, map) {
-  const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary('places')
+async function getPlaceByIdAndShowInfoWindow(placeId, map) {
+  const { Place } = await google.maps.importLibrary('places')
 
-  const request = {
-    // required parameters
-    fields: ['id', 'formattedAddress', 'googleMapsURI', 'location', 'displayName', 'primaryType'],
-    locationRestriction: {
-      center: latLng,
-      radius: 50,
-    },
-    // optional parameters
-    // includedPrimaryTypes: ['dog_cafe'],
-    maxResultCount: 5,
-    rankPreference: SearchNearbyRankPreference.DISTANCE,
-    language: 'zh_Hant',
-    region: 'tw',
-  }
+  // Use place ID to create a new Place instance.
+  const place = new Place({
+    id: placeId,
+    requestedLanguage: 'zh_Hant', // optional
+  })
 
-  const { places } = await Place.searchNearby(request)
+  // Call fetchFields, passing the desired data fields.
+  await place.fetchFields({
+    fields: ['formattedAddress', 'googleMapsURI', 'location', 'displayName'],
+  })
+  // Log the result
+  console.log(place)
 
-  if (places.length) {
-    const place = places[0]
-    console.log(place)
+  setNote(
+    place.displayName,
+    { lat: place.location.lat(), lng: place.location.lng() },
+    place.googleMapsURI,
+    place.formattedAddress,
+  )
 
-    newNote.value.storeName = place.displayName
-    newNote.value.location = { lat: place.location.lat(), lng: place.location.lng() }
-    newNote.value.googlemapURL = place.googleMapsURI
-    newNote.value.address = place.formattedAddress
-
-    showInfoWindow(latLng, map, place.displayName, place.formattedAddress)
-  } else {
-    showInfoWindow(
-      latLng,
-      map,
-      '未找到店家',
-      `Latitude: ${latLng.lat()}, Longitude: ${latLng.lng()}`,
-    )
-  }
+  showInfoWindow(place.location, map, place.displayName, place.formattedAddress)
 }
 
 async function showInfoWindow(latLng, map, placeName, placeAddress) {
   const { InfoWindow } = await google.maps.importLibrary('maps')
 
-  const infowindow = new InfoWindow({
+  infoWindow = new InfoWindow({
     position: latLng,
     content: buildInfoWindowContent(placeName, placeAddress),
     maxWidth: 250,
   })
 
-  infowindow.open(map)
+  infoWindow.open(map)
 
   // Add event listener after the infowindow is opened.
-  google.maps.event.addListener(infowindow, 'domready', function () {
+  google.maps.event.addListener(infoWindow, 'domready', function () {
     const button = document.querySelector('.create-note')
 
     if (button) {
@@ -141,10 +134,57 @@ watch(
     initMap()
   },
 )
+
+onMounted(async () => {
+  const input = document.querySelector('.search-input input')
+
+  await google.maps.importLibrary('places')
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    fields: ['place_id', 'geometry', 'formatted_address', 'name', 'url'],
+  })
+
+  // autocomplete.bindTo('bounds', map)
+  autocomplete.addListener('place_changed', () => {
+    infoWindow.close()
+
+    const place = autocomplete.getPlace()
+
+    console.log(place)
+
+    if (!place.geometry || !place.geometry.location) {
+      return
+    }
+
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport)
+    } else {
+      map.setCenter(place.geometry.location)
+      map.setZoom(18)
+    }
+
+    setNote(
+      place.name,
+      {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      },
+      place.url,
+      place.formatted_address,
+    )
+
+    showInfoWindow(place.geometry.location, map, place.name, place.formatted_address)
+  })
+})
 </script>
 
 <template>
   <div>
+    <q-input class="search-input" outlined placeholder="在這裡搜尋" color="red"></q-input>
+
+    <div class="separator row flex-center">
+      <div class="text text-grey-7 q-py-sm">或直接點選地點</div>
+    </div>
+
     <div id="map"></div>
 
     <q-dialog v-model="isCreate" persistent>
@@ -161,7 +201,7 @@ watch(
 
 <style lang="scss" scoped>
 #map {
-  height: calc(100vh - 128px - 48px - 40px);
+  height: calc(100vh - 128px - 48px - 93px);
   width: 100%;
 }
 
@@ -193,7 +233,7 @@ watch(
   }
 
   button:hover {
-    background-color: $grey-2;
+    background-color: $light-green;
   }
 }
 
