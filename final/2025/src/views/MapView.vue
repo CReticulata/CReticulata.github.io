@@ -8,15 +8,15 @@ import { watch } from 'vue'
 const noteStore = useNoteStore()
 
 const newNote = ref({
-  id: 4,
-  storeName: '雙全紅茶（每日定量）',
+  id: '',
+  storeName: '',
   foodScore: 0,
   serviceScore: 0,
   pros: '',
   cons: '',
-  location: { lat: 22.992445, lng: 120.1980019 },
-  googlemapURL: 'https://maps.app.goo.gl/a2yRs46sHTAmpu679',
-  address: '700台南市中西區中正路131巷2號',
+  location: { lat: 0, lng: 0 },
+  googlemapURL: '',
+  address: '',
 })
 
 const isCreate = ref(false)
@@ -26,7 +26,8 @@ function onCreateNote() {
   isCreate.value = false
 }
 
-function setNote(storeName, location, googlemapURL, address) {
+function setNote(placeId, storeName, location, googlemapURL, address) {
+  newNote.value.id = placeId
   newNote.value.storeName = storeName
   newNote.value.location = location
   newNote.value.googlemapURL = googlemapURL
@@ -82,6 +83,7 @@ async function getPlaceByIdAndShowInfoWindow(placeId, map) {
   console.log(place)
 
   setNote(
+    placeId,
     place.displayName,
     { lat: place.location.lat(), lng: place.location.lng() },
     place.googleMapsURI,
@@ -147,7 +149,9 @@ onMounted(async () => {
 
   // autocomplete.bindTo('bounds', map)
   autocomplete.addListener('place_changed', () => {
-    infoWindow.close()
+    if (infoWindow) {
+      infoWindow.close()
+    }
 
     const place = autocomplete.getPlace()
 
@@ -165,6 +169,7 @@ onMounted(async () => {
     }
 
     setNote(
+      place.place_id,
       place.name,
       {
         lat: place.geometry.location.lat(),

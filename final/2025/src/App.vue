@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { useNoteStore } from '@/stores/noteStore'
 import { onBeforeMount } from 'vue'
@@ -13,6 +12,7 @@ onBeforeMount(() => {
 function showInfo() {
   // console.log(noteStore.notesSortedByDistance)
 }
+noteStore.getNotesFromGoogleSheet()
 </script>
 
 <template>

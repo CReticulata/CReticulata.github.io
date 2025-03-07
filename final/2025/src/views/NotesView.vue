@@ -14,7 +14,7 @@ const noteStore = useNoteStore()
         @delete:note="noteStore.deleteNote($event)"
       ></Note>
     </div>
-    <!-- <pre>{{ noteStore.notes }}</pre> -->
+    <pre>{{ noteStore.notes }}</pre>
   </div>
 </template>
 
