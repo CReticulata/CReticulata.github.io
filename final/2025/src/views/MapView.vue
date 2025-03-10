@@ -192,7 +192,7 @@ function onCreateNote() {
   }
 
   // 擋住重複的
-  if (noteStore.userNotes.find((note) => note.id === pendingNote.id)) {
+  if (noteStore.notes.find((note) => note.id === pendingNote.id)) {
     isExist.value = true
 
     return
