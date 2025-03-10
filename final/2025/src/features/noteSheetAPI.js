@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const googleSheetUrl =
-  'https://script.google.com/macros/s/AKfycbxAlW3xAgN-XveIMW0ICUDKygdyBCoZSlKyiGlVqTxnb5i5gjsMYEeFh7QnyOInKcv9wg'
+  'https://script.google.com/macros/s/AKfycbyFSBMvkb8qBxSBr2RTQdthDCROKNN_0xu1VU-x-0N-u0frQWPabcTdiUCodlfeQi-IEg'
 
 const apiClient = axios.create({
   baseURL: `${googleSheetUrl}`,
@@ -15,11 +15,12 @@ const apiClient = axios.create({
 })
 
 export default {
-  async GET() {
-    const res = await apiClient.get(`/exec?path=工作表1&action=read`)
+  async GET(user) {
+    const res = await apiClient.get(`/exec?path=工作表1&action=read&user=${user}`)
     return res.data
   },
-  async POST(data) {
+  async UPDATE(data) {
+    console.log(data)
     const pros = data.pros.split('\n').join('\\n')
     const cons = data.cons.split('\n').join('\\n')
     const params =
@@ -34,7 +35,13 @@ export default {
       `&googlemapURL=${data.googlemapURL}` +
       `&address=${data.address}`
 
-    const res = await apiClient.get(`/exec?path=工作表1&action=write&${params}`)
+    const res = await apiClient.get(`/exec?path=工作表1&action=update&${params}`)
+    return res.data
+  },
+  async DELETE(data) {
+    const user = data.user
+    const id = data.id
+    const res = await apiClient.get(`/exec?path=工作表1&action=delete&user=${user}&id=${id}`)
     return res.data
   },
   // async PATCH(url, data) {
