@@ -1,19 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import googleSheet from '@/features/googleSheet'
+import noteSheetAPI from '@/features/noteSheetAPI'
 
-// const refTable = {
-//   user: 0,
-//   placeId: 1,
-//   storeName: 2,
-//   foodScore: 3,
-//   serviceScore: 4,
-//   pros: 5,
-//   cons: 6,
-//   location: 7,
-//   googlemapURL: 8,
-//   address: 9,
-// }
 const refList = [
   'user',
   'id',
@@ -29,14 +17,23 @@ const refList = [
 
 export const useNoteStore = defineStore('noteStore', () => {
   const notes = ref([])
+  // need to update
+  const user = ref('tangerine')
 
-  async function getNotesFromGoogleSheet() {
-    const data = await googleSheet.GET('/values/工作表1')
-    // 整理成物件
-    const originalNotes = [...data.values].slice(1, data.values.length)
-    console.log(originalNotes)
+  const userNotes = computed(() => {
+    return notes.value.filter((note) => note.user === user.value)
+  })
 
-    const formattedNotes = originalNotes.map((arrNote) => {
+  function formatNotesFromGoogle(notes) {
+    // return notes.map((arrNote) => {
+    return notes.map((note) => {
+      return {
+        ...note,
+        pros: note.pros.split('\\n').join('\n'),
+        cons: note.cons.split('\\n').join('\n'),
+        location: JSON.parse(note.location),
+      }
+
       return arrNote.reduce((note, currValue, currIndex) => {
         if (refList[currIndex] === 'foodScore' || refList[currIndex] === 'serviceScore') {
           note[refList[currIndex]] = Number(currValue)
@@ -55,14 +52,43 @@ export const useNoteStore = defineStore('noteStore', () => {
         return note
       }, {})
     })
-
-    // console.log(notes)
-
-    notes.value = formattedNotes
   }
 
-  async function updateNotesToGoogleSheet() {
-    // to-do
+  function formatNotesToGoogle(notes) {
+    return notes.map((objNote) => {
+      const arrNote = []
+
+      refList.forEach((property, index) => {
+        arrNote[index] = objNote[property]
+      })
+
+      return arrNote
+    })
+  }
+
+  async function getNotesFromGoogleSheet() {
+    const res = await noteSheetAPI.GET()
+    // const data = await googleSheet.GET('/values/工作表1')
+
+    // const originalNotes = [...data.values].slice(1, data.values.length)
+    // const formattedNotes = formatNotesFromGoogle(originalNotes)
+
+    // notes.value = formattedNotes
+
+    notes.value = formatNotesFromGoogle(res.data)
+  }
+
+  async function createNotesToGoogleSheet(newNote) {
+    const res = await noteSheetAPI.POST(newNote)
+    console.log(res)
+  }
+
+  const userLocation = ref({})
+
+  function updateUserLocation() {
+    navigator.geolocation.getCurrentPosition((position) => {
+      userLocation.value = { lat: position.coords.latitude, lng: position.coords.longitude }
+    })
   }
 
   const notesSortedByDistance = computed(() => {
@@ -82,7 +108,15 @@ export const useNoteStore = defineStore('noteStore', () => {
   })
 
   function createNote(newNote) {
+    // 擋掉重複的筆記
+    // const userNotes = notes.value.filter((note) => note.user === newNote.user)
+    if (userNotes.value.find((note) => note.id === newNote.id)) {
+      return
+    }
+
     notes.value = [...notes.value, newNote]
+
+    createNotesToGoogleSheet(newNote)
   }
 
   function updateNote(newNote) {
@@ -104,22 +138,15 @@ export const useNoteStore = defineStore('noteStore', () => {
     ]
   }
 
-  const userLocation = ref({})
-
-  function updateUserLocation() {
-    navigator.geolocation.getCurrentPosition((position) => {
-      userLocation.value = { lat: position.coords.latitude, lng: position.coords.longitude }
-    })
-  }
-
   return {
     getNotesFromGoogleSheet,
     notes,
+    userNotes,
+    userLocation,
+    updateUserLocation,
     notesSortedByDistance,
     createNote,
     updateNote,
     deleteNote,
-    userLocation,
-    updateUserLocation,
   }
 })

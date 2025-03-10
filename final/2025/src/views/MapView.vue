@@ -8,6 +8,7 @@ import { watch } from 'vue'
 const noteStore = useNoteStore()
 
 const newNote = ref({
+  user: 'tangerine',
   id: '',
   storeName: '',
   foodScore: 0,
@@ -20,19 +21,7 @@ const newNote = ref({
 })
 
 const isCreate = ref(false)
-
-function onCreateNote() {
-  noteStore.createNote(newNote.value)
-  isCreate.value = false
-}
-
-function setNote(placeId, storeName, location, googlemapURL, address) {
-  newNote.value.id = placeId
-  newNote.value.storeName = storeName
-  newNote.value.location = location
-  newNote.value.googlemapURL = googlemapURL
-  newNote.value.address = address
-}
+const isExist = ref(false)
 
 // Initialize and add the map
 let map
@@ -182,6 +171,43 @@ onMounted(async () => {
     showInfoWindow(place.geometry.location, map, place.name, place.formatted_address)
   })
 })
+
+function onCreateNote() {
+  infoWindow.close()
+
+  isCreate.value = false
+
+  const pendingNote = newNote.value
+  newNote.value = {
+    user: 'tangerine',
+    id: '',
+    storeName: '',
+    foodScore: 0,
+    serviceScore: 0,
+    pros: '',
+    cons: '',
+    location: { lat: 0, lng: 0 },
+    googlemapURL: '',
+    address: '',
+  }
+
+  // 擋住重複的
+  if (noteStore.userNotes.find((note) => note.id === pendingNote.id)) {
+    isExist.value = true
+
+    return
+  }
+
+  noteStore.createNote(pendingNote)
+}
+
+function setNote(placeId, storeName, location, googlemapURL, address) {
+  newNote.value.id = placeId
+  newNote.value.storeName = storeName
+  newNote.value.location = location
+  newNote.value.googlemapURL = googlemapURL
+  newNote.value.address = address
+}
 </script>
 
 <template>
@@ -202,6 +228,19 @@ onMounted(async () => {
         @update:isCreate="isCreate = $event"
         @create:note="onCreateNote"
       ></Note>
+    </q-dialog>
+
+    <q-dialog v-model="isExist">
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-icon name="warning" color="negative" size="24px" />
+          <span class="q-ml-sm">已經寫過這家店的筆記囉！</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
     </q-dialog>
   </div>
 </template>

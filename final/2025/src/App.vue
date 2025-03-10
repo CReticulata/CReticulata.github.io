@@ -7,12 +7,12 @@ const noteStore = useNoteStore()
 
 onBeforeMount(() => {
   noteStore.updateUserLocation()
+  noteStore.getNotesFromGoogleSheet()
 })
 
 function showInfo() {
   // console.log(noteStore.notesSortedByDistance)
 }
-noteStore.getNotesFromGoogleSheet()
 </script>
 
 <template>
