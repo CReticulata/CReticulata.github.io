@@ -45,6 +45,17 @@ function showInfo() {
         <q-toolbar-title class="footer__title">© 2025 橘子</q-toolbar-title>
       </q-toolbar>
     </q-footer>
+
+    <q-circular-progress
+      :indeterminate="noteStore.isSynchronize"
+      :show-value="noteStore.isSynchronize"
+      rounded
+      size="60px"
+      font-size="12px"
+      color="light-green"
+      class="q-ma-md circular-progress"
+      >同步中</q-circular-progress
+    >
   </q-layout>
 </template>
 
@@ -60,6 +71,13 @@ function showInfo() {
 
 :deep(.tab .q-tab__label) {
   font-size: 18px;
+}
+
+.circular-progress {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 2001;
 }
 
 .footer {

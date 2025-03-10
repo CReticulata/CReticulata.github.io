@@ -62,7 +62,9 @@ export const useNoteStore = defineStore('noteStore', () => {
     })
   }
 
+  const isSynchronize = ref(false)
   async function getNotesFromGoogleSheet() {
+    isSynchronize.value = true
     const res = await noteSheetAPI.GET(user.value)
     // const data = await googleSheet.GET('/values/工作表1')
 
@@ -72,11 +74,14 @@ export const useNoteStore = defineStore('noteStore', () => {
     // notes.value = formattedNotes
 
     notes.value = formatNotesFromGoogle(res.data)
+    isSynchronize.value = false
   }
 
   async function updateNotesToGoogleSheet(newNote) {
+    isSynchronize.value = true
     const res = await noteSheetAPI.UPDATE(newNote)
     console.log(res)
+    isSynchronize.value = false
   }
 
   const userLocation = ref({})
@@ -138,12 +143,15 @@ export const useNoteStore = defineStore('noteStore', () => {
   }
 
   async function deleteNoteOnGoogleSheet(note) {
+    isSynchronize.value = true
     const res = await noteSheetAPI.DELETE(note)
     console.log(res)
+    isSynchronize.value = false
   }
 
   return {
     getNotesFromGoogleSheet,
+    isSynchronize,
     notes,
     userLocation,
     updateUserLocation,
