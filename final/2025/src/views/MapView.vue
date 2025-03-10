@@ -99,6 +99,11 @@ async function showInfoWindow(latLng, map, placeName, placeAddress) {
 
     if (button) {
       button.addEventListener('click', () => {
+        if (noteStore.notes.find((note) => note.id === newNote.value.id)) {
+          isExist.value = true
+
+          return
+        }
         isCreate.value = true
       })
     }
