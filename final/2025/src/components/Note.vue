@@ -14,7 +14,13 @@ const isEdit = ref(props.isCreate)
 const deleteConfirm = ref(false)
 const cancelConfirm = ref(false)
 
-const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note'])
+const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note', 'update:note'])
+
+function onSave() {
+  isEdit.value = false
+
+  return emits('update:note', note.value)
+}
 </script>
 
 <template>
@@ -90,7 +96,7 @@ const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note'])
     <q-card-actions v-if="!isCreate" align="around">
       <q-btn flat class="text-negative action-btn" @click="deleteConfirm = true">刪除</q-btn>
       <q-btn v-if="!isEdit" flat class="action-btn" @click="isEdit = true">編輯</q-btn>
-      <q-btn v-else flat class="action-btn" @click="isEdit = false">儲存</q-btn>
+      <q-btn v-else flat class="action-btn" @click="onSave">儲存</q-btn>
     </q-card-actions>
     <q-card-actions v-else align="around">
       <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>

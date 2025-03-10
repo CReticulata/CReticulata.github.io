@@ -20,10 +20,6 @@ export const useNoteStore = defineStore('noteStore', () => {
   // need to update
   const user = ref('tangerine')
 
-  const userNotes = computed(() => {
-    return notes.value.filter((note) => note.user === user.value)
-  })
-
   function formatNotesFromGoogle(notes) {
     // return notes.map((arrNote) => {
     return notes.map((note) => {
@@ -67,7 +63,7 @@ export const useNoteStore = defineStore('noteStore', () => {
   }
 
   async function getNotesFromGoogleSheet() {
-    const res = await noteSheetAPI.GET()
+    const res = await noteSheetAPI.GET(user.value)
     // const data = await googleSheet.GET('/values/工作表1')
 
     // const originalNotes = [...data.values].slice(1, data.values.length)
@@ -78,8 +74,8 @@ export const useNoteStore = defineStore('noteStore', () => {
     notes.value = formatNotesFromGoogle(res.data)
   }
 
-  async function createNotesToGoogleSheet(newNote) {
-    const res = await noteSheetAPI.POST(newNote)
+  async function updateNotesToGoogleSheet(newNote) {
+    const res = await noteSheetAPI.UPDATE(newNote)
     console.log(res)
   }
 
@@ -109,14 +105,13 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   function createNote(newNote) {
     // 擋掉重複的筆記
-    // const userNotes = notes.value.filter((note) => note.user === newNote.user)
-    if (userNotes.value.find((note) => note.id === newNote.id)) {
+    if (notes.value.find((note) => note.id === newNote.id)) {
       return
     }
 
     notes.value = [...notes.value, newNote]
 
-    createNotesToGoogleSheet(newNote)
+    updateNotesToGoogleSheet(newNote)
   }
 
   function updateNote(newNote) {
@@ -127,6 +122,8 @@ export const useNoteStore = defineStore('noteStore', () => {
       newNote,
       ...notes.value.slice(index + 1, notes.value.length),
     ]
+
+    updateNotesToGoogleSheet(newNote)
   }
 
   function deleteNote(targetNote) {
@@ -136,12 +133,18 @@ export const useNoteStore = defineStore('noteStore', () => {
       ...notes.value.slice(0, index),
       ...notes.value.slice(index + 1, notes.value.length),
     ]
+
+    deleteNoteOnGoogleSheet(targetNote)
+  }
+
+  async function deleteNoteOnGoogleSheet(note) {
+    const res = await noteSheetAPI.DELETE(note)
+    console.log(res)
   }
 
   return {
     getNotesFromGoogleSheet,
     notes,
-    userNotes,
     userLocation,
     updateUserLocation,
     notesSortedByDistance,

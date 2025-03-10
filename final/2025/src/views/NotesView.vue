@@ -10,7 +10,7 @@ const noteStore = useNoteStore()
     <div class="note" v-for="(note, index) in noteStore.notesSortedByDistance" :key="note.id">
       <Note
         :modelValue="noteStore.notesSortedByDistance[index]"
-        @update:modelValue="noteStore.updateNote($event)"
+        @update:note="noteStore.updateNote($event)"
         @delete:note="noteStore.deleteNote($event)"
       ></Note>
     </div>
