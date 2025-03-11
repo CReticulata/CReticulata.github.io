@@ -6,9 +6,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  noteInput: {
+    type: Object,
+    required: true,
+  },
 })
 
-const note = defineModel()
+// const note = defineModel()
+const note = ref({ ...props.noteInput })
 
 const isEdit = ref(props.isCreate)
 const deleteConfirm = ref(false)
