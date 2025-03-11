@@ -105,7 +105,7 @@ function onSave() {
     </q-card-actions>
     <q-card-actions v-else align="around">
       <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>
-      <q-btn flat class="action-btn" @click="emits('create:note')">儲存</q-btn>
+      <q-btn flat class="action-btn" @click="emits('create:note', note)">儲存</q-btn>
     </q-card-actions>
 
     <q-dialog v-model="deleteConfirm" persistent>

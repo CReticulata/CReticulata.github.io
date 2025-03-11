@@ -177,12 +177,12 @@ onMounted(async () => {
   })
 })
 
-function onCreateNote() {
+function onCreateNote(event) {
   infoWindow.close()
 
   isCreate.value = false
 
-  const pendingNote = newNote.value
+  const pendingNote = event
   newNote.value = {
     user: 'tangerine',
     id: '',
@@ -228,9 +228,8 @@ function setNote(placeId, storeName, location, googlemapURL, address) {
     <q-dialog v-model="isCreate" persistent>
       <Note
         :isCreate="true"
-        :modelValue="newNote"
-        @update:modelValue="(val) => (newNote = val)"
         @update:isCreate="isCreate = $event"
+        :noteInput="newNote"
         @create:note="onCreateNote"
       ></Note>
     </q-dialog>

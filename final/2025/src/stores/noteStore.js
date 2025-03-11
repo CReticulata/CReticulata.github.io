@@ -28,11 +28,7 @@ export const useNoteStore = defineStore('noteStore', () => {
         ...note,
         pros: note.pros.split('\\n').join('\n'),
         cons: note.cons.split('\\n').join('\n'),
-        // example: {lat=22.9922921, lng=120.1997279}
-        location: {
-          lat: Number(note.location.split(',')[0].split('=')[1]),
-          lng: Number(note.location.split(',')[1].split('=')[1].slice(0, -1)),
-        },
+        location: JSON.parse(note.location),
       }
 
       return arrNote.reduce((note, currValue, currIndex) => {
@@ -56,6 +52,9 @@ export const useNoteStore = defineStore('noteStore', () => {
   }
 
   function formatNotesToGoogle(notes) {
+    return notes.map((note) => {
+      return { ...note, location: JSON.stringify(note.location) }
+    })
     return notes.map((objNote) => {
       const arrNote = []
 
@@ -65,6 +64,10 @@ export const useNoteStore = defineStore('noteStore', () => {
 
       return arrNote
     })
+  }
+
+  function formatNoteToGoogle(note) {
+    return { ...note, location: JSON.stringify(note.location) }
   }
 
   const isSynchronize = ref(false)
@@ -85,7 +88,8 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   async function updateNotesToGoogleSheet(newNote) {
     isSynchronize.value = true
-    const res = await noteSheetAPI.UPDATE(newNote)
+    const pendingNote = formatNoteToGoogle(newNote)
+    const res = await noteSheetAPI.UPDATE(pendingNote)
     console.log(res)
     await getNotesFromGoogleSheet()
     isSynchronize.value = false
