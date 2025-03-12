@@ -231,7 +231,6 @@ watch(
 
 <template>
   <div>
-    <pre>{{ newNote }}</pre>
     <q-input class="search-input" outlined placeholder="在這裡搜尋" color="red"></q-input>
 
     <div class="separator row flex-center">
