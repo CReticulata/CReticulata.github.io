@@ -13,6 +13,10 @@ const router = createRouter({
       name: 'Map',
       component: () => import('@/views/MapView.vue'),
     },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: { name: 'Notes' },
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
@@ -20,6 +24,10 @@ const router = createRouter({
     } else {
       return { top: 0 }
     }
+  },
+  navigationFallback: {
+    rewrite: '/index.html',
+    exclude: ['/images/*.{png,jpg,gif}', '/css/*'],
   },
 })
 
