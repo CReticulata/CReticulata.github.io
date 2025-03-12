@@ -103,7 +103,7 @@ export const useNoteStore = defineStore('noteStore', () => {
 
     const pendingNote = formatNoteToGoogle(newNote)
     const res = await noteSheetAPI.UPDATE(pendingNote)
-    console.log(res)
+    // console.log(res)
     await getNotesFromGoogleSheet()
 
     isSynchronize.value = false
@@ -171,7 +171,7 @@ export const useNoteStore = defineStore('noteStore', () => {
     isSynchronize.value = true
 
     const res = await noteSheetAPI.DELETE(note)
-    console.log(res)
+    // console.log(res)
     await getNotesFromGoogleSheet()
 
     isSynchronize.value = false

@@ -28,7 +28,7 @@ function handleCredentialResponse(response) {
 }
 
 function onSignout() {
-  console.log('登出')
+  // console.log('登出')
   google.accounts.id.disableAutoSelect()
   noteStore.clearUserInfoAndNotes()
   localStorage.removeItem('Tomato-key')

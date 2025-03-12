@@ -70,7 +70,7 @@ async function getPlaceByIdAndShowInfoWindow(placeId, map) {
     fields: ['formattedAddress', 'googleMapsURI', 'location', 'displayName'],
   })
   // Log the result
-  console.log(place)
+  // console.log(place)
 
   setNote(
     placeId,
@@ -156,7 +156,7 @@ onMounted(async () => {
 
     const place = autocomplete.getPlace()
 
-    console.log(place)
+    // console.log(place)
 
     if (!place.geometry || !place.geometry.location) {
       return
