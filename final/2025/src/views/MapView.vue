@@ -8,7 +8,7 @@ import { watch } from 'vue'
 const noteStore = useNoteStore()
 
 const newNote = ref({
-  user: noteStore.user.ID,
+  user: noteStore.user.ID || '',
   id: '',
   storeName: '',
   foodScore: 0,
@@ -102,13 +102,13 @@ async function showInfoWindow(latLng, map, placeName, placeAddress) {
       button.addEventListener('click', () => {
         if (noteStore.notes.find((note) => note.id === newNote.value.id)) {
           isExist.value = true
-
+          infoWindow.close()
           return
         }
 
         if (!noteStore.user.ID) {
           isNotLogin.value = true
-
+          infoWindow.close()
           return
         }
         isCreate.value = true
@@ -220,10 +220,18 @@ function setNote(placeId, storeName, location, googlemapURL, address) {
   newNote.value.googlemapURL = googlemapURL
   newNote.value.address = address
 }
+
+watch(
+  () => noteStore.user,
+  () => {
+    newNote.value.user = noteStore.user.ID
+  },
+)
 </script>
 
 <template>
   <div>
+    <pre>{{ newNote }}</pre>
     <q-input class="search-input" outlined placeholder="在這裡搜尋" color="red"></q-input>
 
     <div class="separator row flex-center">
