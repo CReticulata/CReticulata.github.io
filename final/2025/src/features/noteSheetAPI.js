@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const googleSheetUrl =
-  'https://script.google.com/macros/s/AKfycbwMXaPYGNzObVAB5GRco0ZiVKlmdZUorF9ZAA7OjT9k2vB1L38jFtzNNSta-XowAQdMzg'
+  'https://script.google.com/macros/s/AKfycbxupkOcs1vpolyazCj2-Ge10SQUdAxZIBWWYug1YKzq-zfxX62msAO3CwOV60LHJBEMAQ'
 
 const apiClient = axios.create({
   baseURL: `${googleSheetUrl}`,
