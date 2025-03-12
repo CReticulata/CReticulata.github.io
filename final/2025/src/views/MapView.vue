@@ -8,7 +8,7 @@ import { watch } from 'vue'
 const noteStore = useNoteStore()
 
 const newNote = ref({
-  user: 'tangerine',
+  user: noteStore.user.ID,
   id: '',
   storeName: '',
   foodScore: 0,
@@ -22,6 +22,7 @@ const newNote = ref({
 
 const isCreate = ref(false)
 const isExist = ref(false)
+const isNotLogin = ref(false)
 
 // Initialize and add the map
 let map
@@ -101,6 +102,12 @@ async function showInfoWindow(latLng, map, placeName, placeAddress) {
       button.addEventListener('click', () => {
         if (noteStore.notes.find((note) => note.id === newNote.value.id)) {
           isExist.value = true
+
+          return
+        }
+
+        if (!noteStore.user.ID) {
+          isNotLogin.value = true
 
           return
         }
@@ -184,7 +191,7 @@ function onCreateNote(event) {
 
   const pendingNote = event
   newNote.value = {
-    user: 'tangerine',
+    user: noteStore.user.ID,
     id: '',
     storeName: '',
     foodScore: 0,
@@ -239,6 +246,19 @@ function setNote(placeId, storeName, location, googlemapURL, address) {
         <q-card-section class="row items-center">
           <q-icon name="warning" color="negative" size="24px" />
           <span class="q-ml-sm">已經寫過這家店的筆記囉！</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="isNotLogin">
+      <q-card style="width: 200px">
+        <q-card-section class="row items-center">
+          <q-icon name="warning" color="negative" size="24px" />
+          <span class="q-ml-sm">請先登入！</span>
         </q-card-section>
 
         <q-card-actions align="right">

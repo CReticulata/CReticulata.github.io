@@ -19,7 +19,23 @@ export const useNoteStore = defineStore('noteStore', () => {
   const originalNotes = ref([])
   const notes = ref([])
   // need to update
-  const user = ref('tangerine')
+  const user = ref({})
+
+  function setUserInfoAndGetNotes(info) {
+    user.value = {
+      ID: info.sub,
+      fullName: info.name,
+      picture: info.picture,
+      email: info.email,
+    }
+
+    getNotesFromGoogleSheet()
+  }
+
+  function clearUserInfoAndNotes() {
+    user.value = {}
+    notes.value = []
+  }
 
   function formatNotesFromGoogle(notes) {
     // return notes.map((arrNote) => {
@@ -73,7 +89,7 @@ export const useNoteStore = defineStore('noteStore', () => {
   const isSynchronize = ref(false)
   async function getNotesFromGoogleSheet() {
     isSynchronize.value = true
-    const res = await noteSheetAPI.GET(user.value)
+    const res = await noteSheetAPI.GET(user.value.ID)
     // const data = await googleSheet.GET('/values/工作表1')
 
     // const originalNotes = [...data.values].slice(1, data.values.length)
@@ -162,6 +178,9 @@ export const useNoteStore = defineStore('noteStore', () => {
   }
 
   return {
+    user,
+    setUserInfoAndGetNotes,
+    clearUserInfoAndNotes,
     getNotesFromGoogleSheet,
     isSynchronize,
     originalNotes,
