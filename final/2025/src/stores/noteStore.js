@@ -18,7 +18,6 @@ const refList = [
 export const useNoteStore = defineStore('noteStore', () => {
   const originalNotes = ref([])
   const notes = ref([])
-  // need to update
   const user = ref({})
 
   function setUserInfoAndGetNotes(info) {
@@ -87,27 +86,26 @@ export const useNoteStore = defineStore('noteStore', () => {
   }
 
   const isSynchronize = ref(false)
+
   async function getNotesFromGoogleSheet() {
     isSynchronize.value = true
-    const res = await noteSheetAPI.GET(user.value.ID)
-    // const data = await googleSheet.GET('/values/工作表1')
 
-    // const originalNotes = [...data.values].slice(1, data.values.length)
-    // const formattedNotes = formatNotesFromGoogle(originalNotes)
-
-    // notes.value = formattedNotes
+    const res = await noteSheetAPI.GET()
 
     originalNotes.value = formatNotesFromGoogle(res.data)
     notes.value = formatNotesFromGoogle(res.data)
+
     isSynchronize.value = false
   }
 
   async function updateNotesToGoogleSheet(newNote) {
     isSynchronize.value = true
+
     const pendingNote = formatNoteToGoogle(newNote)
     const res = await noteSheetAPI.UPDATE(pendingNote)
     console.log(res)
     await getNotesFromGoogleSheet()
+
     isSynchronize.value = false
   }
 
@@ -171,9 +169,11 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   async function deleteNoteOnGoogleSheet(note) {
     isSynchronize.value = true
+
     const res = await noteSheetAPI.DELETE(note)
     console.log(res)
     await getNotesFromGoogleSheet()
+
     isSynchronize.value = false
   }
 

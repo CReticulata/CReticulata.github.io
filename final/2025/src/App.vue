@@ -108,7 +108,6 @@ onBeforeMount(() => {
               </q-item>
             </div>
           </q-list>
-          <pre>{{ noteStore.user }}</pre>
         </q-scroll-area>
       </q-drawer>
     </q-header>
