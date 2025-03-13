@@ -1,5 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { getDistanceBetweenPoints } from '@/features/utilities'
+import { useNoteStore } from '@/stores/noteStore'
+
+const noteStore = useNoteStore()
 
 const props = defineProps({
   isCreate: {
@@ -19,6 +23,29 @@ const isEdit = ref(props.isCreate)
 const deleteConfirm = ref(false)
 const cancelConfirm = ref(false)
 
+const distanceText = computed(() => {
+  let distance = getDistanceBetweenPoints(
+    noteStore.userLocation.lat,
+    noteStore.userLocation.lng,
+    props.noteInput.location.lat,
+    props.noteInput.location.lng,
+  )
+
+  if (distance > 1000) {
+    distance = getDistanceBetweenPoints(
+      noteStore.userLocation.lat,
+      noteStore.userLocation.lng,
+      props.noteInput.location.lat,
+      props.noteInput.location.lng,
+      'kilometers',
+    )
+
+    return `${distance} 公里`
+  }
+
+  return `${distance} 公尺`
+})
+
 const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note', 'update:note'])
 
 function onSave() {
@@ -32,8 +59,11 @@ function onSave() {
   <q-card class="note">
     <q-card-section class="bg-brown-5 text-white note__title-section">
       <div class="text-h6 ellipsis store-name">{{ note.storeName }}</div>
-      <div class="note__address">
-        <div class="text-subtitle2 ellipsis-2-lines address">{{ note.address }}</div>
+      <div class="note__address-info">
+        <div class="address-info">
+          <div class="text-subtitle2 ellipsis address-info__address">{{ note.address }}</div>
+          <div class="address-info__distance">{{ distanceText }}</div>
+        </div>
         <q-btn
           v-if="note.googlemapURL"
           flat
@@ -159,7 +189,7 @@ function onSave() {
     height: 108px;
   }
 
-  &__address {
+  &__address-info {
     display: flex;
     gap: 5px;
     justify-content: space-between;
@@ -176,9 +206,17 @@ function onSave() {
   height: 32px;
 }
 
-.address {
-  height: 42px;
-  overflow: hidden;
+.address-info {
+  width: 240px;
+
+  &__address {
+    height: 21px;
+    overflow: hidden;
+  }
+
+  &__distance {
+    color: $grey-5;
+  }
 }
 .details {
   &__form {

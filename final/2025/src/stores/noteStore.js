@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { getDistanceBetweenPoints } from '@/features/utilities'
 import noteSheetAPI from '@/features/noteSheetAPI'
 
 const refList = [
@@ -119,14 +120,18 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   const notesSortedByDistance = computed(() => {
     return [...notes.value].sort((noteA, noteB) => {
-      const distanceBtwUserAndA = Math.hypot(
-        noteA.location.lat - userLocation.value.lat,
-        noteA.location.lng - userLocation.value.lng,
+      const distanceBtwUserAndA = getDistanceBetweenPoints(
+        userLocation.value.lat,
+        userLocation.value.lng,
+        noteA.location.lat,
+        noteA.location.lng,
       )
 
-      const distanceBtwUserAndB = Math.hypot(
-        noteB.location.lat - userLocation.value.lat,
-        noteB.location.lng - userLocation.value.lng,
+      const distanceBtwUserAndB = getDistanceBetweenPoints(
+        userLocation.value.lat,
+        userLocation.value.lng,
+        noteB.location.lat,
+        noteB.location.lng,
       )
 
       return distanceBtwUserAndA - distanceBtwUserAndB
