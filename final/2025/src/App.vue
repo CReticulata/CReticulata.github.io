@@ -89,11 +89,18 @@ onBeforeMount(() => {
       >
         <q-scroll-area class="fit">
           <q-list padding class="menu-list">
-            <q-item v-if="!noteStore.user.ID" v-ripple>
-              <q-item-section>
-                <GoogleSigninButton></GoogleSigninButton>
-              </q-item-section>
-            </q-item>
+            <div v-if="!noteStore.user.ID">
+              <q-item v-ripple>
+                <q-item-section>
+                  <GoogleSigninButton></GoogleSigninButton>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section
+                  >註：如無法登入，請改使用預設瀏覽器開啟此網站後再嘗試登入。</q-item-section
+                >
+              </q-item>
+            </div>
 
             <div v-else>
               <q-item v-ripple>
@@ -107,6 +114,7 @@ onBeforeMount(() => {
 
                 <q-item-section> 登出 </q-item-section>
               </q-item>
+              <pre>{{ noteStore.userLocation }}</pre>
             </div>
           </q-list>
         </q-scroll-area>
