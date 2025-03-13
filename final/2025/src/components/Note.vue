@@ -31,9 +31,9 @@ function onSave() {
 <template>
   <q-card class="note">
     <q-card-section class="bg-brown-5 text-white note__title-section">
-      <div class="text-h6">{{ note.storeName }}</div>
+      <div class="text-h6 ellipsis store-name">{{ note.storeName }}</div>
       <div class="note__address">
-        <div class="text-subtitle2">{{ note.address }}</div>
+        <div class="text-subtitle2 ellipsis-2-lines address">{{ note.address }}</div>
         <q-btn
           v-if="note.googlemapURL"
           flat
@@ -170,6 +170,15 @@ function onSave() {
     flex-direction: column;
     gap: 15px;
   }
+}
+
+.store-name {
+  height: 32px;
+}
+
+.address {
+  height: 42px;
+  overflow: hidden;
 }
 .details {
   &__form {
