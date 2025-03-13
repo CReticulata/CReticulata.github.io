@@ -279,7 +279,7 @@ watch(
 
 <style lang="scss" scoped>
 #map {
-  height: calc(100vh - 128px - 48px - 93px);
+  height: calc(100dvh - 128px - 48px - 93px - 60px);
   width: 100%;
 }
 
