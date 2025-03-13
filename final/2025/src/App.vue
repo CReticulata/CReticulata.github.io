@@ -8,6 +8,7 @@ import GoogleSigninButton from './components/GoogleSigninButton.vue'
 const noteStore = useNoteStore()
 
 const drawer = ref(false)
+const version = ref('1.0.2')
 
 function initialize() {
   if (localStorage.getItem('Tomato-key')) {
@@ -119,8 +120,21 @@ onBeforeMount(() => {
     </q-page-container>
 
     <q-footer bordered class="footer">
-      <q-toolbar>
-        <q-toolbar-title class="footer__title">© 2025 橘子</q-toolbar-title>
+      <q-toolbar class="column flex-center q-py-sm">
+        <div class="footer__title row flex-center">
+          <q-toolbar-title class="title">© 2025 橘子</q-toolbar-title>
+          <q-btn
+            flat
+            round
+            color="white"
+            icon="fa-brands fa-github"
+            size="xs"
+            href="https://github.com/CReticulata"
+          />
+        </div>
+        <div class="footer__content row flex-center">
+          <p class="version">v{{ version }}</p>
+        </div>
       </q-toolbar>
     </q-footer>
 
@@ -163,9 +177,23 @@ onBeforeMount(() => {
   height: 60px;
 
   &__title {
-    color: $black;
-    font-size: 14px;
     text-align: center;
   }
+
+  &__content {
+    gap: 2px;
+  }
+}
+
+.title {
+  color: $black;
+  font-size: 14px;
+  padding: 0;
+}
+
+.version {
+  margin: 0;
+  font-size: 10px;
+  color: $light-green;
 }
 </style>
