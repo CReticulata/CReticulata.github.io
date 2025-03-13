@@ -40,6 +40,7 @@ async function initMap() {
     zoom: 18,
     center: userLocation,
     mapId: 'DEMO_MAP_ID',
+    gestureHandling: 'greedy',
   })
 
   // The marker, positioned at userLocation
