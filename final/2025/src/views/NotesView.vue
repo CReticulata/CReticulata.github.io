@@ -3,10 +3,30 @@ import { ref, computed } from 'vue'
 import Note from '@/components/Note.vue'
 import { useNoteStore } from '@/stores/noteStore'
 import { getDistanceBetweenPoints } from '@/features/utilities'
+import SettingOptions from '@/components/SettingOptions.vue'
 
 const noteStore = useNoteStore()
 
+const menu = ref(false)
+
 const searchInput = ref('')
+
+// const cityFilter = ref({
+//   Tainan: false,
+//   Taipei: false,
+// })
+
+// const cityFilterSettings = ref([
+//   {
+//     name: 'Tainan',
+//     label: '台南市',
+//   },
+//   {
+//     name: 'Taipei',
+//     label: '台北市',
+//   },
+// ])
+
 const distanceFilter = ref(5)
 const distanceLabel = computed(() => {
   switch (distanceFilter.value) {
@@ -53,7 +73,6 @@ const filteredNotes = computed(() => {
       }
     })
   }
-
   return result
 })
 
@@ -62,6 +81,24 @@ const sorter = ref({
   food: false,
   service: false,
 })
+
+const sorterSettings = ref([
+  {
+    name: 'total',
+    icon: 'star',
+    label: '總分',
+  },
+  {
+    name: 'food',
+    icon: 'lunch_dining',
+    label: '餐點',
+  },
+  {
+    name: 'service',
+    icon: 'restaurant',
+    label: '服務',
+  },
+])
 
 const sortedFilteredNotes = computed(() => {
   if (sorter.value.total) {
@@ -80,18 +117,8 @@ const sortedFilteredNotes = computed(() => {
   if (sorter.value.service) {
     return [...filteredNotes.value].sort((noteA, noteB) => noteB.serviceScore - noteA.serviceScore)
   }
-
   return filteredNotes.value
 })
-
-function onlyOneSelected(filterName) {
-  sorter.value = {
-    total: false,
-    food: false,
-    service: false,
-    [filterName]: sorter.value[filterName],
-  }
-}
 </script>
 
 <template>
@@ -107,37 +134,15 @@ function onlyOneSelected(filterName) {
           v-model="searchInput"
         ></q-input>
         <q-btn icon="tune" round flat color="green">
-          <q-menu anchor="bottom right" self="top right">
+          <q-menu v-model="menu" anchor="bottom right" self="top right">
             <div class="q-pa-md column q-gutter-y-md">
               <div>
                 <div class="text-md text-grey-8 q-mb-sm">選擇排序方式</div>
-                <q-chip
-                  v-model:selected="sorter.total"
-                  :color="sorter.total ? 'light-green' : 'green'"
-                  text-color="white"
-                  icon="star"
-                  @click="onlyOneSelected('total')"
-                >
-                  依總分
-                </q-chip>
-                <q-chip
-                  v-model:selected="sorter.food"
-                  :color="sorter.food ? 'light-green' : 'green'"
-                  text-color="white"
-                  icon="lunch_dining"
-                  @click="onlyOneSelected('food')"
-                >
-                  依餐點
-                </q-chip>
-                <q-chip
-                  v-model:selected="sorter.service"
-                  :color="sorter.service ? 'light-green' : 'green'"
-                  text-color="white"
-                  icon="restaurant"
-                  @click="onlyOneSelected('service')"
-                >
-                  依服務
-                </q-chip>
+                <SettingOptions
+                  :isOnlyOneSelected="true"
+                  :optionSettings="sorterSettings"
+                  v-model="sorter"
+                ></SettingOptions>
               </div>
               <q-separator></q-separator>
               <div>
@@ -161,23 +166,16 @@ function onlyOneSelected(filterName) {
                   <div class="column flex-center filter-option">
                     <div class="text-md text-grey-8 q-mb-sm">依城市</div>
                     <div class="row">
-                      <q-chip
-                        v-model:selected="sorter.service"
-                        :color="sorter.service ? 'light-green' : 'green'"
-                        text-color="white"
-                      >
-                        台南市
-                      </q-chip>
-                      <q-chip
-                        v-model:selected="sorter.service"
-                        :color="sorter.service ? 'light-green' : 'green'"
-                        text-color="white"
-                      >
-                        台北市
-                      </q-chip>
+                      <!-- <SettingOptions
+                        :optionSettings="cityFilterSettings"
+                        v-model="cityFilter"
+                      ></SettingOptions> -->
                     </div>
                   </div>
                 </div>
+              </div>
+              <div class="row justify-end">
+                <q-btn flat size="md" text-color="green" @click="menu = false">確定</q-btn>
               </div>
             </div>
           </q-menu>
