@@ -2,19 +2,59 @@
 import { ref, computed } from 'vue'
 import Note from '@/components/Note.vue'
 import { useNoteStore } from '@/stores/noteStore'
+import { getDistanceBetweenPoints } from '@/features/utilities'
 
 const noteStore = useNoteStore()
 
 const searchInput = ref('')
+const distanceFilter = ref(5)
+const distanceLabel = computed(() => {
+  switch (distanceFilter.value) {
+    case 1:
+      return '100 公尺'
+    case 2:
+      return '300 公尺'
+    case 3:
+      return '500 公尺'
+    case 4:
+      return '1 公里'
+    default:
+      return '所有距離'
+  }
+})
 
-const notesFilteredBySearch = computed(() => {
+const filteredNotes = computed(() => {
+  let result = [...noteStore.notesSortedByDistance]
+
   if (searchInput.value) {
-    return [...noteStore.notesSortedByDistance].filter((note) =>
-      note.storeName.includes(searchInput.value),
-    )
+    result = [...result].filter((note) => note.storeName.includes(searchInput.value))
   }
 
-  return [...noteStore.notesSortedByDistance]
+  if (distanceFilter.value) {
+    result = [...result].filter((note) => {
+      const distance = getDistanceBetweenPoints(
+        noteStore.userLocation.lat,
+        noteStore.userLocation.lng,
+        note.location.lat,
+        note.location.lng,
+      )
+
+      switch (distanceFilter.value) {
+        case 1:
+          return distance < 101
+        case 2:
+          return distance < 301
+        case 3:
+          return distance < 501
+        case 4:
+          return distance < 1001
+        default:
+          return true
+      }
+    })
+  }
+
+  return result
 })
 
 const sorter = ref({
@@ -23,7 +63,28 @@ const sorter = ref({
   service: false,
 })
 
-function onSelect(filterName) {
+const sortedFilteredNotes = computed(() => {
+  if (sorter.value.total) {
+    return [...filteredNotes.value].sort((noteA, noteB) => {
+      const totalOfA = noteA.foodScore + noteA.serviceScore
+      const totalOfB = noteB.foodScore + noteB.serviceScore
+
+      return totalOfB - totalOfA
+    })
+  }
+
+  if (sorter.value.food) {
+    return [...filteredNotes.value].sort((noteA, noteB) => noteB.foodScore - noteA.foodScore)
+  }
+
+  if (sorter.value.service) {
+    return [...filteredNotes.value].sort((noteA, noteB) => noteB.serviceScore - noteA.serviceScore)
+  }
+
+  return filteredNotes.value
+})
+
+function onlyOneSelected(filterName) {
   sorter.value = {
     total: false,
     food: false,
@@ -31,25 +92,6 @@ function onSelect(filterName) {
     [filterName]: sorter.value[filterName],
   }
 }
-
-const notesSortedByTotal = computed(() => {
-  return [...notesFilteredBySearch.value].sort((noteA, noteB) => {
-    const totalOfA = noteA.foodScore + noteA.serviceScore
-    const totalOfB = noteB.foodScore + noteB.serviceScore
-
-    return totalOfB - totalOfA
-  })
-})
-
-const notesSortedByFood = computed(() => {
-  return [...notesFilteredBySearch.value].sort((noteA, noteB) => noteB.foodScore - noteA.foodScore)
-})
-
-const notesSortedByService = computed(() => {
-  return [...notesFilteredBySearch.value].sort(
-    (noteA, noteB) => noteB.serviceScore - noteA.serviceScore,
-  )
-})
 </script>
 
 <template>
@@ -64,77 +106,95 @@ const notesSortedByService = computed(() => {
           color="green"
           v-model="searchInput"
         ></q-input>
-      </div>
-      <div class="q-gutter-xs">
-        <q-chip
-          v-model:selected="sorter.total"
-          :color="sorter.total ? 'light-green' : 'green'"
-          text-color="white"
-          icon="star"
-          @click="onSelect('total')"
-        >
-          依總分
-        </q-chip>
-        <q-chip
-          v-model:selected="sorter.food"
-          :color="sorter.food ? 'light-green' : 'green'"
-          text-color="white"
-          icon="lunch_dining"
-          @click="onSelect('food')"
-        >
-          依餐點
-        </q-chip>
-        <q-chip
-          v-model:selected="sorter.service"
-          :color="sorter.service ? 'light-green' : 'green'"
-          text-color="white"
-          icon="restaurant"
-          @click="onSelect('service')"
-        >
-          依服務
-        </q-chip>
+        <q-btn icon="tune" round flat color="green">
+          <q-menu anchor="bottom right" self="top right">
+            <div class="q-pa-md column q-gutter-y-md">
+              <div>
+                <div class="text-md text-grey-8 q-mb-sm">選擇排序方式</div>
+                <q-chip
+                  v-model:selected="sorter.total"
+                  :color="sorter.total ? 'light-green' : 'green'"
+                  text-color="white"
+                  icon="star"
+                  @click="onlyOneSelected('total')"
+                >
+                  依總分
+                </q-chip>
+                <q-chip
+                  v-model:selected="sorter.food"
+                  :color="sorter.food ? 'light-green' : 'green'"
+                  text-color="white"
+                  icon="lunch_dining"
+                  @click="onlyOneSelected('food')"
+                >
+                  依餐點
+                </q-chip>
+                <q-chip
+                  v-model:selected="sorter.service"
+                  :color="sorter.service ? 'light-green' : 'green'"
+                  text-color="white"
+                  icon="restaurant"
+                  @click="onlyOneSelected('service')"
+                >
+                  依服務
+                </q-chip>
+              </div>
+              <q-separator></q-separator>
+              <div>
+                <div class="text-md text-grey-8 q-mb-md">選擇篩選方式</div>
+                <div class="q-gutter-y-sm">
+                  <div class="column flex-center filter-option--distance">
+                    <div class="text-md text-grey-8 q-mb-sm">依距離</div>
+                    <q-slider
+                      v-model="distanceFilter"
+                      color="green"
+                      markers
+                      snap
+                      label
+                      label-always
+                      :label-value="distanceLabel"
+                      :min="1"
+                      :max="5"
+                      :step="1"
+                    />
+                  </div>
+                  <div class="column flex-center filter-option">
+                    <div class="text-md text-grey-8 q-mb-sm">依城市</div>
+                    <div class="row">
+                      <q-chip
+                        v-model:selected="sorter.service"
+                        :color="sorter.service ? 'light-green' : 'green'"
+                        text-color="white"
+                      >
+                        台南市
+                      </q-chip>
+                      <q-chip
+                        v-model:selected="sorter.service"
+                        :color="sorter.service ? 'light-green' : 'green'"
+                        text-color="white"
+                      >
+                        台北市
+                      </q-chip>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </q-menu>
+        </q-btn>
       </div>
     </div>
 
-    <div v-if="sorter.total" class="row flex-center q-gutter-lg">
-      <div class="note" v-for="(note, index) in notesSortedByTotal" :key="note.id">
+    <div class="row flex-center q-gutter-lg">
+      <div class="note" v-for="(note, index) in sortedFilteredNotes" :key="note.id">
         <Note
-          :noteInput="notesSortedByTotal[index]"
+          :noteInput="sortedFilteredNotes[index]"
           @update:note="noteStore.updateNote($event)"
           @delete:note="noteStore.deleteNote($event)"
         ></Note>
       </div>
     </div>
 
-    <div v-else-if="sorter.food" class="row flex-center q-gutter-lg">
-      <div class="note" v-for="(note, index) in notesSortedByFood" :key="note.id">
-        <Note
-          :noteInput="notesSortedByFood[index]"
-          @update:note="noteStore.updateNote($event)"
-          @delete:note="noteStore.deleteNote($event)"
-        ></Note>
-      </div>
-    </div>
-
-    <div v-else-if="sorter.service" class="row flex-center q-gutter-lg">
-      <div class="note" v-for="(note, index) in notesSortedByService" :key="note.id">
-        <Note
-          :noteInput="notesSortedByService[index]"
-          @update:note="noteStore.updateNote($event)"
-          @delete:note="noteStore.deleteNote($event)"
-        ></Note>
-      </div>
-    </div>
-
-    <div v-else class="row flex-center q-gutter-lg">
-      <div class="note" v-for="(note, index) in notesFilteredBySearch" :key="note.id">
-        <Note
-          :noteInput="notesFilteredBySearch[index]"
-          @update:note="noteStore.updateNote($event)"
-          @delete:note="noteStore.deleteNote($event)"
-        ></Note>
-      </div>
-    </div>
     <!-- <pre>{{ noteStore.notes }}</pre> -->
   </div>
 </template>
@@ -142,13 +202,21 @@ const notesSortedByService = computed(() => {
 <style lang="scss" scoped>
 .search {
   width: 300px;
+  display: flex;
+  justify-content: space-between;
 
   &__input {
-    width: 100%;
+    width: calc(100% - 50px);
   }
 }
 
 .note {
   min-width: 320px;
+}
+
+.filter-option {
+  &--distance {
+    padding: 0 16px;
+  }
 }
 </style>
