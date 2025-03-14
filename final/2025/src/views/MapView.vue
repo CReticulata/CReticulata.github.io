@@ -288,6 +288,7 @@ watch(
 <style lang="scss" scoped>
 #map {
   height: calc(100dvh - 128px - 48px - 93px - 60px);
+  min-height: 500px;
   width: 100%;
 }
 

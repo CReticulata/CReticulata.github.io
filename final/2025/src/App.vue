@@ -50,7 +50,7 @@ onBeforeMount(() => {
 
 <template>
   <q-layout view="lHh lpr lff">
-    <q-header class="navbar" elevated>
+    <q-header class="navbar" elevated reveal>
       <q-toolbar class="navbar__toolbar">
         <q-avatar>
           <img src="@/images/icon-tomato.png" />
