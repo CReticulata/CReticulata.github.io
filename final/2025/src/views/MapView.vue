@@ -20,6 +20,8 @@ const newNote = ref({
   address: '',
 })
 
+const searchInput = ref('')
+
 const isCreate = ref(false)
 const isExist = ref(false)
 const isNotLogin = ref(false)
@@ -232,7 +234,13 @@ watch(
 
 <template>
   <div>
-    <q-input class="search-input" outlined placeholder="在這裡搜尋" color="red"></q-input>
+    <q-input
+      v-model="searchInput"
+      class="search-input"
+      outlined
+      placeholder="在這裡搜尋"
+      color="red"
+    ></q-input>
 
     <div class="separator row flex-center">
       <div class="text text-grey-7 q-py-sm">或直接點選地點</div>
