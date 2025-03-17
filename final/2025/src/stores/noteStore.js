@@ -37,11 +37,41 @@ export const useNoteStore = defineStore('noteStore', () => {
     notes.value = []
   }
 
+  async function getCityFromPlaceId(placeId) {
+    const { Geocoder } = await google.maps.importLibrary('geocoding')
+    const geocoder = new Geocoder()
+    const res = await geocoder.geocode({ placeId: placeId })
+    const addressComponents = res.results[0].address_components
+
+    const cityComponent = addressComponents.find(
+      (part) => part.types[0] === 'administrative_area_level_1',
+    )
+
+    return cityComponent.long_name
+  }
+
+  async function setCity(notes) {
+    const notesWithCity = []
+    for (const note of notes) {
+      try {
+        const city = await getCityFromPlaceId(note.id)
+        notesWithCity.push({
+          ...note,
+          city: city,
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    return notesWithCity
+  }
+
   function formatNotesFromGoogle(notes) {
-    // return notes.map((arrNote) => {
     return notes.map((note) => {
       return {
         ...note,
+        foodScore: Number(note.foodScore),
+        serviceScore: Number(note.serviceScore),
         pros: note.pros.split('\\n').join('\n'),
         cons: note.cons.split('\\n').join('\n'),
         location: JSON.parse(note.location),
@@ -95,6 +125,7 @@ export const useNoteStore = defineStore('noteStore', () => {
 
     originalNotes.value = formatNotesFromGoogle(res.data)
     notes.value = formatNotesFromGoogle(res.data)
+    notes.value = await setCity(notes.value)
 
     isSynchronize.value = false
   }

@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue'
-import Note from '@/components/Note.vue'
+import { ref, computed, watch } from 'vue'
 import { useNoteStore } from '@/stores/noteStore'
 import { getDistanceBetweenPoints } from '@/features/utilities'
+import Note from '@/components/Note.vue'
 import SettingOptions from '@/components/SettingOptions.vue'
 
 const noteStore = useNoteStore()
@@ -11,21 +11,28 @@ const menu = ref(false)
 
 const searchInput = ref('')
 
-// const cityFilter = ref({
-//   Tainan: false,
-//   Taipei: false,
-// })
+const cities = computed(() => {
+  const allCities = noteStore.notes.map((note) => note.city)
+  return Array.from(new Set(allCities))
+})
 
-// const cityFilterSettings = ref([
-//   {
-//     name: 'Tainan',
-//     label: '台南市',
-//   },
-//   {
-//     name: 'Taipei',
-//     label: '台北市',
-//   },
-// ])
+const initCityFilterSettings = computed(() => {
+  return cities.value.map((city) => {
+    return {
+      name: city,
+      label: city,
+      value: false,
+    }
+  })
+})
+
+const cityFilterSettings = ref(null)
+watch(
+  () => initCityFilterSettings.value,
+  () => {
+    cityFilterSettings.value = initCityFilterSettings.value
+  },
+)
 
 const distanceFilter = ref(5)
 const distanceLabel = computed(() => {
@@ -73,13 +80,19 @@ const filteredNotes = computed(() => {
       }
     })
   }
-  return result
-})
 
-const sorter = ref({
-  total: false,
-  food: false,
-  service: false,
+  let selectedCities
+  if (cityFilterSettings.value) {
+    selectedCities = cityFilterSettings.value
+      .filter((cityFilter) => cityFilter.value === true)
+      .map((cityFilter) => cityFilter.name)
+
+    if (selectedCities.length > 0) {
+      result = [...result].filter((note) => selectedCities.includes(note.city))
+    }
+  }
+
+  return result
 })
 
 const sorterSettings = ref([
@@ -87,35 +100,44 @@ const sorterSettings = ref([
     name: 'total',
     icon: 'star',
     label: '總分',
+    value: false,
   },
   {
     name: 'food',
     icon: 'lunch_dining',
     label: '餐點',
+    value: false,
   },
   {
     name: 'service',
     icon: 'restaurant',
     label: '服務',
+    value: false,
   },
 ])
 
 const sortedFilteredNotes = computed(() => {
-  if (sorter.value.total) {
-    return [...filteredNotes.value].sort((noteA, noteB) => {
-      const totalOfA = noteA.foodScore + noteA.serviceScore
-      const totalOfB = noteB.foodScore + noteB.serviceScore
+  const sorter = sorterSettings.value.find((sorter) => sorter.value)
 
-      return totalOfB - totalOfA
-    })
-  }
+  if (sorter) {
+    if (sorter.name === 'total') {
+      return [...filteredNotes.value].sort((noteA, noteB) => {
+        const totalOfA = noteA.foodScore + noteA.serviceScore
+        const totalOfB = noteB.foodScore + noteB.serviceScore
 
-  if (sorter.value.food) {
-    return [...filteredNotes.value].sort((noteA, noteB) => noteB.foodScore - noteA.foodScore)
-  }
+        return totalOfB - totalOfA
+      })
+    }
 
-  if (sorter.value.service) {
-    return [...filteredNotes.value].sort((noteA, noteB) => noteB.serviceScore - noteA.serviceScore)
+    if (sorter.name === 'food') {
+      return [...filteredNotes.value].sort((noteA, noteB) => noteB.foodScore - noteA.foodScore)
+    }
+
+    if (sorter.name === 'service') {
+      return [...filteredNotes.value].sort(
+        (noteA, noteB) => noteB.serviceScore - noteA.serviceScore,
+      )
+    }
   }
   return filteredNotes.value
 })
@@ -138,11 +160,7 @@ const sortedFilteredNotes = computed(() => {
             <div class="q-pa-md column q-gutter-y-md">
               <div>
                 <div class="text-md text-grey-8 q-mb-sm">選擇排序方式</div>
-                <SettingOptions
-                  :isOnlyOneSelected="true"
-                  :optionSettings="sorterSettings"
-                  v-model="sorter"
-                ></SettingOptions>
+                <SettingOptions :isOnlyOneSelected="true" v-model="sorterSettings"></SettingOptions>
               </div>
               <q-separator></q-separator>
               <div>
@@ -166,10 +184,7 @@ const sortedFilteredNotes = computed(() => {
                   <div class="column flex-center filter-option">
                     <div class="text-md text-grey-8 q-mb-sm">依城市</div>
                     <div class="row">
-                      <!-- <SettingOptions
-                        :optionSettings="cityFilterSettings"
-                        v-model="cityFilter"
-                      ></SettingOptions> -->
+                      <SettingOptions v-model="cityFilterSettings"></SettingOptions>
                     </div>
                   </div>
                 </div>

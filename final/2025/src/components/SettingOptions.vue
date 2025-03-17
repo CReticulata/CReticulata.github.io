@@ -4,32 +4,46 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  optionSettings: {
-    type: Array,
-    required: true,
-  },
 })
 
-const values = defineModel()
+const optionSettings = defineModel()
 
 function setFalseToAllValues(optionSettings) {
-  return optionSettings.reduce((values, currOptionSetting) => {
-    values[currOptionSetting.name] = false
-
-    return values
-  }, {})
+  return optionSettings.map((option) => {
+    return {
+      ...option,
+      value: false,
+    }
+  })
 }
 
-function onlyOneSelected(selectedName) {
-  return {
-    ...setFalseToAllValues(props.optionSettings),
-    [selectedName]: values.value[selectedName],
+function onlyOneSelected(index) {
+  const allFalseOptions = setFalseToAllValues(optionSettings.value)
+  if (optionSettings.value[index].value) {
+    return [
+      ...allFalseOptions.slice(0, index),
+      {
+        ...optionSettings.value[index],
+        value: true,
+      },
+      ...allFalseOptions.slice(index + 1),
+    ]
   }
+
+  return [
+    ...allFalseOptions.slice(0, index),
+    {
+      ...optionSettings.value[index],
+      value: false,
+    },
+    ...allFalseOptions.slice(index + 1),
+  ]
 }
 
-function onClick(optionName) {
+function onClick(index) {
   if (props.isOnlyOneSelected) {
-    values.value = onlyOneSelected(optionName)
+    optionSettings.value = onlyOneSelected(index)
+    return
   }
 }
 </script>
@@ -38,12 +52,12 @@ function onClick(optionName) {
   <q-chip
     v-for="(option, index) in optionSettings"
     :key="index"
-    v-model:selected="values[option.name]"
-    :color="values[option.name] ? 'light-green' : 'green'"
+    v-model:selected="option.value"
+    :color="option.value ? 'light-green' : 'green'"
     :icon="option.icon"
     :icon-selected="option.icon"
     text-color="white"
-    @click="onClick(option.name)"
+    @click="onClick(index)"
   >
     {{ option.label }}
   </q-chip>
