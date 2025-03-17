@@ -114,7 +114,6 @@ onBeforeMount(() => {
 
                 <q-item-section> 登出 </q-item-section>
               </q-item>
-              <pre>{{ noteStore.userLocation }}</pre>
             </div>
           </q-list>
         </q-scroll-area>
