@@ -248,7 +248,7 @@ watch(
       <div class="text text-grey-7 q-py-sm">或直接點選地點</div>
     </div>
 
-    <div id="map"></div>
+    <div id="map" @touchstart.stop @mousedown.stop></div>
 
     <q-dialog v-model="isCreate" persistent>
       <Note

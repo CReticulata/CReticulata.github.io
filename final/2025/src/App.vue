@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeMount, ref } from 'vue'
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import { useNoteStore } from '@/stores/noteStore'
 import { decodeJwtResponse } from '@/features/userInfo.js'
 import GoogleSigninButton from './components/GoogleSigninButton.vue'
@@ -8,7 +8,7 @@ import GoogleSigninButton from './components/GoogleSigninButton.vue'
 const noteStore = useNoteStore()
 
 const drawer = ref(false)
-const version = ref('1.1.0')
+const version = ref('1.2.0')
 
 function initialize() {
   if (localStorage.getItem('Tomato-key')) {
@@ -46,6 +46,18 @@ onBeforeMount(() => {
   noteStore.updateUserLocation()
   initialize()
 })
+
+const router = useRouter()
+
+function handleSwipe({ e, ...newInfo }) {
+  if (newInfo.direction === 'left') {
+    return router.push({ name: 'Map' })
+  }
+
+  if (newInfo.direction === 'right') {
+    return router.push({ name: 'Notes' })
+  }
+}
 </script>
 
 <template>
@@ -121,7 +133,7 @@ onBeforeMount(() => {
     </q-header>
 
     <q-page-container>
-      <q-page class="q-pa-lg">
+      <q-page class="q-pa-lg" v-touch-swipe.mouse.horizontal="handleSwipe">
         <RouterView />
       </q-page>
     </q-page-container>
