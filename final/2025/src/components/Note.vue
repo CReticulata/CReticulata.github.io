@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue'
 import { getDistanceBetweenPoints } from '@/features/utilities'
 import { useNoteStore } from '@/stores/noteStore'
+import PhotoCarouselBtns from './PhotoCarouselBtns.vue'
+import imgurAPI from '@/features/imgurAPI'
 
 const noteStore = useNoteStore()
 
@@ -18,6 +20,11 @@ const props = defineProps({
 
 // const note = defineModel()
 const note = ref({ ...props.noteInput })
+
+const files = ref(null)
+const uploader = ref(false)
+const canUpload = computed(() => files.value !== null && files.value.length > 0)
+const isUploading = ref(false)
 
 const isEdit = ref(props.isCreate)
 const deleteConfirm = ref(false)
@@ -50,6 +57,30 @@ const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note', 'upd
 
 function onSave() {
   isEdit.value = false
+
+  return emits('update:note', note.value)
+}
+
+async function upload() {
+  isUploading.value = true
+  const uploadedPhotos = []
+  for (const file of files.value) {
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('type', 'image')
+
+    const res = await imgurAPI.POST(formData)
+    uploadedPhotos.push(res.data.link)
+  }
+
+  note.value.photos = uploadedPhotos
+  isUploading.value = false
+  uploader.value = false
+  return emits('update:note', note.value)
+}
+
+function deletePhoto(e) {
+  note.value.photos = e
 
   return emits('update:note', note.value)
 }
@@ -108,18 +139,46 @@ function onSave() {
           />
         </div>
 
-        <q-expansion-item icon="thumb_up" label="優點" class="textarea-title">
+        <q-expansion-item icon="fa-solid fa-note-sticky" label="筆記" class="textarea-title">
           <q-card>
             <q-card-section>
-              <q-input color="green" outlined autogrow v-model="note.pros" :readonly="!isEdit" />
+              <q-input
+                label="優點"
+                stack-label
+                color="green"
+                outlined
+                autogrow
+                v-model="note.pros"
+                :readonly="!isEdit"
+              />
             </q-card-section>
-          </q-card>
-        </q-expansion-item>
-
-        <q-expansion-item icon="thumb_down" label="缺點" class="textarea-title">
-          <q-card>
             <q-card-section>
-              <q-input color="red" outlined autogrow v-model="note.cons" :readonly="!isEdit" />
+              <q-input
+                label="缺點"
+                stack-label
+                color="red"
+                outlined
+                autogrow
+                v-model="note.cons"
+                :readonly="!isEdit"
+              />
+            </q-card-section>
+            <q-card-section class="row q-gutter-x-xs">
+              <q-btn
+                icon="add_photo_alternate"
+                label="上傳照片"
+                flat
+                color="grey-6"
+                @click="uploader = true"
+                :disable="!isEdit"
+              >
+              </q-btn>
+
+              <!-- 之後改成v-model="note.photos" -->
+              <PhotoCarouselBtns
+                :photos="note.photos"
+                @delete:photo="deletePhoto"
+              ></PhotoCarouselBtns>
             </q-card-section>
           </q-card>
         </q-expansion-item>
@@ -137,6 +196,41 @@ function onSave() {
       <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>
       <q-btn flat class="action-btn" @click="emits('create:note', note)">儲存</q-btn>
     </q-card-actions>
+
+    <q-dialog v-model="uploader" class="uploader">
+      <q-card>
+        <q-card-section>
+          <div class="q-pb-sm uploader__title">上傳照片</div>
+          <div class="q-pb-sm uploader__subtitle">照片格式限 JPG、PNG；照片數量限 3 張</div>
+          <q-file
+            v-model="files"
+            outlined
+            use-chips
+            multiple
+            append
+            accept=".jpg, .png"
+            max-files="3"
+            style="max-width: 300px"
+            color="brown"
+          >
+            <template v-slot:prepend>
+              <q-icon name="attach_file" />
+            </template>
+            <template v-slot:after v-if="canUpload">
+              <q-btn
+                color="red"
+                dense
+                icon="cloud_upload"
+                round
+                @click="upload"
+                :disable="!canUpload"
+                :loading="isUploading"
+              />
+            </template>
+          </q-file>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
 
     <q-dialog v-model="deleteConfirm" persistent>
       <q-card>
@@ -245,7 +339,11 @@ function onSave() {
 }
 
 :deep(.q-textarea .q-field__native) {
-  padding: 17px 0;
+  // padding: 17px 0;
+}
+
+:deep(.textarea-title .q-card__section--vert) {
+  padding: 8px 16px;
 }
 
 :deep(.textarea-title .q-item__section--avatar) {
@@ -259,5 +357,17 @@ function onSave() {
 
 .action-btn {
   flex: 1;
+}
+
+.uploader {
+  &__title {
+    font-size: 16px;
+    color: $brown;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: $grey-8;
+  }
 }
 </style>

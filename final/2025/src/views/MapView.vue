@@ -18,6 +18,7 @@ const newNote = ref({
   location: { lat: 0, lng: 0 },
   googlemapURL: '',
   address: '',
+  photos: [],
 })
 
 const searchInput = ref('')
@@ -204,6 +205,7 @@ function onCreateNote(event) {
     location: { lat: 0, lng: 0 },
     googlemapURL: '',
     address: '',
+    photos: [],
   }
 
   // 擋住重複的

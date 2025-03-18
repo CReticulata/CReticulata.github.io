@@ -3,19 +3,6 @@ import { defineStore } from 'pinia'
 import { getDistanceBetweenPoints } from '@/features/utilities'
 import noteSheetAPI from '@/features/noteSheetAPI'
 
-const refList = [
-  'user',
-  'id',
-  'storeName',
-  'foodScore',
-  'serviceScore',
-  'pros',
-  'cons',
-  'location',
-  'googlemapURL',
-  'address',
-]
-
 export const useNoteStore = defineStore('noteStore', () => {
   const originalNotes = ref([])
   const notes = ref([])
@@ -75,25 +62,26 @@ export const useNoteStore = defineStore('noteStore', () => {
         pros: note.pros.split('\\n').join('\n'),
         cons: note.cons.split('\\n').join('\n'),
         location: JSON.parse(note.location),
+        photos: JSON.parse(note.photos),
       }
 
-      return arrNote.reduce((note, currValue, currIndex) => {
-        if (refList[currIndex] === 'foodScore' || refList[currIndex] === 'serviceScore') {
-          note[refList[currIndex]] = Number(currValue)
+      // return arrNote.reduce((note, currValue, currIndex) => {
+      //   if (refList[currIndex] === 'foodScore' || refList[currIndex] === 'serviceScore') {
+      //     note[refList[currIndex]] = Number(currValue)
 
-          return note
-        }
+      //     return note
+      //   }
 
-        if (refList[currIndex] === 'location') {
-          note[refList[currIndex]] = JSON.parse(currValue)
+      //   if (refList[currIndex] === 'photos') {
+      //     note[refList[currIndex]] = JSON.parse(currValue)
 
-          return note
-        }
+      //     return note
+      //   }
 
-        note[refList[currIndex]] = currValue
+      //   note[refList[currIndex]] = currValue
 
-        return note
-      }, {})
+      //   return note
+      // }, {})
     })
   }
 
@@ -101,19 +89,19 @@ export const useNoteStore = defineStore('noteStore', () => {
     return notes.map((note) => {
       return { ...note, location: JSON.stringify(note.location) }
     })
-    return notes.map((objNote) => {
-      const arrNote = []
+    // return notes.map((objNote) => {
+    //   const arrNote = []
 
-      refList.forEach((property, index) => {
-        arrNote[index] = objNote[property]
-      })
+    //   refList.forEach((property, index) => {
+    //     arrNote[index] = objNote[property]
+    //   })
 
-      return arrNote
-    })
+    //   return arrNote
+    // })
   }
 
   function formatNoteToGoogle(note) {
-    return { ...note, location: JSON.stringify(note.location) }
+    return { ...note, location: JSON.stringify(note.location), photos: JSON.stringify(note.photos) }
   }
 
   const isSynchronize = ref(false)
