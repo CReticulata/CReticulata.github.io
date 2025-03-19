@@ -73,7 +73,7 @@ async function upload() {
     uploadedPhotos.push(res.data.link)
   }
 
-  note.value.photos = uploadedPhotos
+  note.value.photos = [...note.value.photos, ...uploadedPhotos].slice(0, 3)
   isUploading.value = false
   uploader.value = false
   return emits('update:note', note.value)
