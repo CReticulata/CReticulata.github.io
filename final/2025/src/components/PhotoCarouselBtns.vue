@@ -140,7 +140,6 @@ function deletePhoto() {
           </q-carousel-control>
         </template>
       </q-carousel>
-      <pre>{{ slide }}</pre>
     </q-dialog>
 
     <q-dialog v-model="deleteDialog" persistent>
