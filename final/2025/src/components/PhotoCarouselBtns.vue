@@ -77,7 +77,12 @@ const widthAndHeightOfPhotos = computed(() => {
     }
 
     if (photo.height > maxHeight && photo.width > maxWidth) {
-      return photo.height > photo.width ? shrinkByMaxWidth : shrinkByMaxHeight
+      // return photo.height > photo.width ? shrinkByMaxWidth : shrinkByMaxHeight
+      if (photo.height > photo.width) {
+        return maxHeight > maxWidth ? shrinkByMaxWidth : shrinkByMaxHeight
+      } else {
+        return shrinkByMaxWidth
+      }
     }
   })
 })

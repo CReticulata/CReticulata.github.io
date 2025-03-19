@@ -148,8 +148,15 @@ onMounted(async () => {
   const input = document.querySelector('.search-input input')
 
   await google.maps.importLibrary('places')
+  const defaultBounds = {
+    north: noteStore.userLocation.lat + 0.1,
+    south: noteStore.userLocation.lat - 0.1,
+    east: noteStore.userLocation.lng + 0.1,
+    west: noteStore.userLocation.lng - 0.1,
+  }
   const autocomplete = new google.maps.places.Autocomplete(input, {
     fields: ['place_id', 'geometry', 'formatted_address', 'name', 'url'],
+    bounds: defaultBounds,
   })
 
   // autocomplete.bindTo('bounds', map)
