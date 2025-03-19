@@ -11,6 +11,10 @@ const apiClient = axios.create({
 })
 
 export default {
+  async GET(imageHash) {
+    const res = await apiClient.get(`/${imageHash}`)
+    return res.data
+  },
   async POST(formData) {
     const res = await apiClient.post('', formData)
     return res.data

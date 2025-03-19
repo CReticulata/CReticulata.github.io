@@ -338,9 +338,9 @@ function deletePhoto(e) {
   text-shadow: none;
 }
 
-:deep(.q-textarea .q-field__native) {
-  // padding: 17px 0;
-}
+// :deep(.q-textarea .q-field__native) {
+// padding: 17px 0;
+// }
 
 :deep(.textarea-title .q-card__section--vert) {
   padding: 8px 16px;

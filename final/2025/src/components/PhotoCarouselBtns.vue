@@ -1,5 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
+import { dom } from 'quasar'
+import imgurAPI from '@/features/imgurAPI'
+
 const props = defineProps({
   photos: {
     type: Array,
@@ -10,6 +13,74 @@ const props = defineProps({
 const carousel = ref(false)
 const slide = ref(1)
 const deleteDialog = ref(false)
+
+const originalWidthAndHeightOfPhotos = ref([
+  {
+    width: 640,
+    height: 480,
+  },
+  {
+    width: 640,
+    height: 480,
+  },
+  {
+    width: 640,
+    height: 480,
+  },
+])
+
+watchEffect(async () => {
+  const imageHashes = props.photos.map(
+    (photo) => photo.split('https://i.imgur.com/')[1].split('.')[0],
+  )
+
+  const results = []
+  for (const imageHash of imageHashes) {
+    const res = await imgurAPI.GET(imageHash)
+    results.push({
+      width: res.data.width,
+      height: res.data.height,
+    })
+  }
+
+  originalWidthAndHeightOfPhotos.value = results
+})
+
+const widthAndHeightOfPhotos = computed(() => {
+  return originalWidthAndHeightOfPhotos.value.map((photo) => {
+    const { height, width } = dom
+    const maxHeight = height(document.body) - 48
+    const maxWidth = width(document.body) > 600 ? 560 : width(document.body) - 48
+
+    if (photo.height <= maxHeight && photo.width <= maxWidth) {
+      return photo
+    }
+
+    // 按照maxW和maxH縮小
+    // width : height = maxWidth : H
+    // H = height * maxWidth / width
+    const shrinkByMaxWidth = {
+      width: maxWidth,
+      height: (photo.height * maxWidth) / photo.width,
+    }
+    const shrinkByMaxHeight = {
+      width: (photo.width * maxHeight) / photo.height,
+      height: maxHeight,
+    }
+
+    if (photo.height > maxHeight && photo.width <= maxWidth) {
+      return shrinkByMaxHeight
+    }
+
+    if (photo.height <= maxHeight && photo.width > maxWidth) {
+      return shrinkByMaxWidth
+    }
+
+    if (photo.height > maxHeight && photo.width > maxWidth) {
+      return photo.height > photo.width ? shrinkByMaxWidth : shrinkByMaxHeight
+    }
+  })
+})
 
 const emits = defineEmits(['delete:photo'])
 
@@ -51,8 +122,7 @@ function deletePhoto() {
         arrows
         v-model="slide"
         infinite
-        style="width: 700px"
-        height="80%"
+        :style="`width: ${widthAndHeightOfPhotos[slide].width}px; height: ${widthAndHeightOfPhotos[slide].height}px`"
         class="carousel-dialog"
       >
         <q-carousel-slide v-for="(photo, index) in photos" :name="index" :img-src="photo" />
@@ -70,6 +140,7 @@ function deletePhoto() {
           </q-carousel-control>
         </template>
       </q-carousel>
+      <pre>{{ slide }}</pre>
     </q-dialog>
 
     <q-dialog v-model="deleteDialog" persistent>
@@ -93,7 +164,7 @@ function deletePhoto() {
   gap: 8px;
 }
 
-:deep(.q-carousel__slide) {
+.q-carousel__slide {
   background-size: contain;
   background-repeat: no-repeat;
 }
