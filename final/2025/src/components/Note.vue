@@ -201,14 +201,14 @@ function deletePhoto(e) {
       <q-card>
         <q-card-section>
           <div class="q-pb-sm uploader__title">上傳照片</div>
-          <div class="q-pb-sm uploader__subtitle">照片格式限 JPG、PNG；照片數量限 3 張</div>
+          <div class="q-pb-sm uploader__subtitle">限上傳圖片檔；照片數量限 3 張</div>
           <q-file
             v-model="files"
             outlined
             use-chips
             multiple
             append
-            accept=".jpg, .png"
+            accept=".jpg, .png, image/*"
             max-files="3"
             style="max-width: 300px"
             color="brown"

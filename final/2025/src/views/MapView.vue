@@ -133,9 +133,7 @@ function buildInfoWindowContent(placeName, placeAddress) {
   return content
 }
 
-if (noteStore.userLocation) {
-  initMap()
-}
+initMap()
 
 watch(
   () => noteStore.userLocation,

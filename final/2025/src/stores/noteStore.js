@@ -129,7 +129,8 @@ export const useNoteStore = defineStore('noteStore', () => {
     isSynchronize.value = false
   }
 
-  const userLocation = ref({})
+  // default at Taipei Main Station
+  const userLocation = ref({ lat: 25.0476133, lng: 121.5148313 })
 
   function updateUserLocation() {
     navigator.geolocation.getCurrentPosition((position) => {
