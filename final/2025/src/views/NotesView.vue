@@ -11,13 +11,11 @@ const menu = ref(false)
 
 const searchInput = ref('')
 
-const cities = computed(() => {
-  const allCities = noteStore.notes.map((note) => note.city)
-  return Array.from(new Set(allCities))
-})
-
 const initCityFilterSettings = computed(() => {
-  return cities.value.map((city) => {
+  const allCities = noteStore.notes.map((note) => note.city)
+  const uniqueCities = Array.from(new Set(allCities))
+
+  return uniqueCities.map((city) => {
     return {
       name: city,
       label: city,
@@ -26,7 +24,7 @@ const initCityFilterSettings = computed(() => {
   })
 })
 
-const cityFilterSettings = ref(null)
+const cityFilterSettings = ref(initCityFilterSettings.value)
 watch(
   () => initCityFilterSettings.value,
   () => {
