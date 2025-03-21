@@ -21,9 +21,9 @@ const props = defineProps({
 // const note = defineModel()
 const note = ref({ ...props.noteInput })
 
-const files = ref(null)
+const files = ref([])
 const uploader = ref(false)
-const canUpload = computed(() => files.value !== null && files.value.length > 0)
+const canUpload = computed(() => files.value.length > 0)
 const isUploading = ref(false)
 
 const isEdit = ref(props.isCreate)

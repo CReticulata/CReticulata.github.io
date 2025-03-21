@@ -30,6 +30,7 @@ const isNotLogin = ref(false)
 // Initialize and add the map
 let map
 let infoWindow
+let autocomplete
 
 async function initMap() {
   // The location of userLocation
@@ -139,6 +140,14 @@ watch(
   () => noteStore.userLocation,
   () => {
     initMap()
+    autocomplete.setOptions({
+      bounds: {
+        north: noteStore.userLocation.lat + 0.1,
+        south: noteStore.userLocation.lat - 0.1,
+        east: noteStore.userLocation.lng + 0.1,
+        west: noteStore.userLocation.lng - 0.1,
+      },
+    })
   },
 )
 
@@ -152,7 +161,7 @@ onMounted(async () => {
     east: noteStore.userLocation.lng + 0.1,
     west: noteStore.userLocation.lng - 0.1,
   }
-  const autocomplete = new google.maps.places.Autocomplete(input, {
+  autocomplete = new google.maps.places.Autocomplete(input, {
     fields: ['place_id', 'geometry', 'formatted_address', 'name', 'url'],
     bounds: defaultBounds,
   })
