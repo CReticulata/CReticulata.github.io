@@ -1,12 +1,40 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   isOnlyOneSelected: {
     type: Boolean,
     default: false,
   },
+  options: {
+    type: Array,
+    default: [],
+  },
+  settings: {
+    type: Array,
+    default: [],
+  },
 })
 
-const optionSettings = defineModel()
+const optionSettings = computed(() => {
+  if (props.settings.length !== 0) {
+    return props.settings
+  }
+
+  return getOptionSettings(props.options)
+})
+
+const emits = defineEmits(['update:optionSettings'])
+
+function getOptionSettings(options) {
+  return options.map((option) => {
+    return {
+      name: option,
+      label: option,
+      value: false,
+    }
+  })
+}
 
 function setFalseToAllValues(optionSettings) {
   return optionSettings.map((option) => {
@@ -19,22 +47,12 @@ function setFalseToAllValues(optionSettings) {
 
 function onlyOneSelected(index) {
   const allFalseOptions = setFalseToAllValues(optionSettings.value)
-  if (optionSettings.value[index].value) {
-    return [
-      ...allFalseOptions.slice(0, index),
-      {
-        ...optionSettings.value[index],
-        value: true,
-      },
-      ...allFalseOptions.slice(index + 1),
-    ]
-  }
 
   return [
     ...allFalseOptions.slice(0, index),
     {
       ...optionSettings.value[index],
-      value: false,
+      value: !optionSettings.value[index].value,
     },
     ...allFalseOptions.slice(index + 1),
   ]
@@ -42,17 +60,27 @@ function onlyOneSelected(index) {
 
 function onClick(index) {
   if (props.isOnlyOneSelected) {
-    optionSettings.value = onlyOneSelected(index)
-    return
+    return emits('update:optionSettings', onlyOneSelected(index))
   }
+
+  const newOptionSettings = [
+    ...optionSettings.value.slice(0, index),
+    {
+      ...optionSettings.value[index],
+      value: !optionSettings.value[index].value,
+    },
+    ...optionSettings.value.slice(index + 1),
+  ]
+  emits('update:optionSettings', newOptionSettings)
 }
 </script>
 
 <template>
+  <q-spinner-dots v-if="optionSettings.length === 0" color="green" size="2em" />
   <q-chip
     v-for="(option, index) in optionSettings"
     :key="index"
-    v-model:selected="option.value"
+    :selected="option.value"
     :color="option.value ? 'light-green' : 'green'"
     :icon="option.icon"
     :icon-selected="option.icon"

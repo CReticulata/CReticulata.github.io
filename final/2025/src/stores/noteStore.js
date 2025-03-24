@@ -8,6 +8,11 @@ export const useNoteStore = defineStore('noteStore', () => {
   const notes = ref([])
   const user = ref({})
 
+  const uniqueCities = computed(() => {
+    const allCities = notes.value.map((note) => note.city).filter((city) => city != null)
+    return Array.from(new Set(allCities))
+  })
+
   function setUserInfoAndGetNotes(info) {
     user.value = {
       ID: info.sub,
@@ -204,6 +209,7 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   return {
     user,
+    uniqueCities,
     setUserInfoAndGetNotes,
     clearUserInfoAndNotes,
     getNotesFromGoogleSheet,

@@ -7,30 +7,12 @@ import SettingOptions from '@/components/SettingOptions.vue'
 
 const noteStore = useNoteStore()
 
+const isLoading = ref(true)
 const menu = ref(false)
 
 const searchInput = ref('')
 
-const initCityFilterSettings = computed(() => {
-  const allCities = noteStore.notes.map((note) => note.city)
-  const uniqueCities = Array.from(new Set(allCities))
-
-  return uniqueCities.map((city) => {
-    return {
-      name: city,
-      label: city,
-      value: false,
-    }
-  })
-})
-
-const cityFilterSettings = ref(initCityFilterSettings.value)
-watch(
-  () => initCityFilterSettings.value,
-  () => {
-    cityFilterSettings.value = initCityFilterSettings.value
-  },
-)
+const cityFilterSettings = ref([])
 
 const distanceFilter = ref(5)
 const distanceLabel = computed(() => {
@@ -139,6 +121,10 @@ const sortedFilteredNotes = computed(() => {
   }
   return filteredNotes.value
 })
+
+setTimeout(() => {
+  isLoading.value = false
+}, 3000)
 </script>
 
 <template>
@@ -158,7 +144,11 @@ const sortedFilteredNotes = computed(() => {
             <div class="q-pa-md column q-gutter-y-md">
               <div>
                 <div class="text-md text-grey-8 q-mb-sm">選擇排序方式</div>
-                <SettingOptions :isOnlyOneSelected="true" v-model="sorterSettings"></SettingOptions>
+                <SettingOptions
+                  :isOnlyOneSelected="true"
+                  :settings="sorterSettings"
+                  @update:optionSettings="sorterSettings = $event"
+                ></SettingOptions>
               </div>
               <q-separator></q-separator>
               <div>
@@ -182,7 +172,11 @@ const sortedFilteredNotes = computed(() => {
                   <div class="column flex-center filter-option">
                     <div class="text-md text-grey-8 q-mb-sm">依城市</div>
                     <div class="row">
-                      <SettingOptions v-model="cityFilterSettings"></SettingOptions>
+                      <SettingOptions
+                        :options="noteStore.uniqueCities"
+                        :settings="cityFilterSettings"
+                        @update:optionSettings="cityFilterSettings = $event"
+                      ></SettingOptions>
                     </div>
                   </div>
                 </div>
@@ -196,6 +190,10 @@ const sortedFilteredNotes = computed(() => {
       </div>
     </div>
 
+    <q-spinner-tail v-if="isLoading && sortedFilteredNotes.length === 0" color="brown" size="2em" />
+    <div v-if="!isLoading && sortedFilteredNotes.length === 0" class="text-grey-8">
+      還沒有筆記喔！
+    </div>
     <div class="row flex-center q-gutter-lg">
       <div class="note" v-for="(note, index) in sortedFilteredNotes" :key="note.id">
         <Note
@@ -205,8 +203,6 @@ const sortedFilteredNotes = computed(() => {
         ></Note>
       </div>
     </div>
-
-    <!-- <pre>{{ noteStore.notes }}</pre> -->
   </div>
 </template>
 

@@ -8,7 +8,7 @@ import GoogleSigninButton from './components/GoogleSigninButton.vue'
 const noteStore = useNoteStore()
 
 const drawer = ref(false)
-const version = ref('1.2.5')
+const version = ref('1.2.6')
 
 function initialize() {
   if (localStorage.getItem('Tomato-key')) {
