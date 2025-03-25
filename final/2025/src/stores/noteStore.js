@@ -30,6 +30,7 @@ export const useNoteStore = defineStore('noteStore', () => {
   }
 
   async function getCityFromPlaceId(placeId) {
+    // console.log('Calling geocoding')
     const { Geocoder } = await google.maps.importLibrary('geocoding')
     const geocoder = new Geocoder()
     const res = await geocoder.geocode({ placeId: placeId })
@@ -40,22 +41,6 @@ export const useNoteStore = defineStore('noteStore', () => {
     )
 
     return cityComponent.long_name
-  }
-
-  async function setCity(notes) {
-    const notesWithCity = []
-    for (const note of notes) {
-      try {
-        const city = await getCityFromPlaceId(note.id)
-        notesWithCity.push({
-          ...note,
-          city: city,
-        })
-      } catch (error) {
-        console.log(error)
-      }
-    }
-    return notesWithCity
   }
 
   function formatNotesFromGoogle(notes) {
@@ -69,44 +54,18 @@ export const useNoteStore = defineStore('noteStore', () => {
         location: JSON.parse(note.location),
         photos: JSON.parse(note.photos),
       }
-
-      // return arrNote.reduce((note, currValue, currIndex) => {
-      //   if (refList[currIndex] === 'foodScore' || refList[currIndex] === 'serviceScore') {
-      //     note[refList[currIndex]] = Number(currValue)
-
-      //     return note
-      //   }
-
-      //   if (refList[currIndex] === 'photos') {
-      //     note[refList[currIndex]] = JSON.parse(currValue)
-
-      //     return note
-      //   }
-
-      //   note[refList[currIndex]] = currValue
-
-      //   return note
-      // }, {})
     })
   }
 
-  function formatNotesToGoogle(notes) {
-    return notes.map((note) => {
-      return { ...note, location: JSON.stringify(note.location) }
-    })
-    // return notes.map((objNote) => {
-    //   const arrNote = []
+  async function formatNoteToGoogle(note) {
+    const city = await getCityFromPlaceId(note.id)
 
-    //   refList.forEach((property, index) => {
-    //     arrNote[index] = objNote[property]
-    //   })
-
-    //   return arrNote
-    // })
-  }
-
-  function formatNoteToGoogle(note) {
-    return { ...note, location: JSON.stringify(note.location), photos: JSON.stringify(note.photos) }
+    return {
+      ...note,
+      location: JSON.stringify(note.location),
+      photos: JSON.stringify(note.photos),
+      city: city,
+    }
   }
 
   const isSynchronize = ref(false)
@@ -118,7 +77,6 @@ export const useNoteStore = defineStore('noteStore', () => {
 
     originalNotes.value = formatNotesFromGoogle(res.data)
     notes.value = formatNotesFromGoogle(res.data)
-    notes.value = await setCity(notes.value)
 
     isSynchronize.value = false
   }
@@ -126,7 +84,7 @@ export const useNoteStore = defineStore('noteStore', () => {
   async function updateNotesToGoogleSheet(newNote) {
     isSynchronize.value = true
 
-    const pendingNote = formatNoteToGoogle(newNote)
+    const pendingNote = await formatNoteToGoogle(newNote)
     const res = await noteSheetAPI.UPDATE(pendingNote)
     // console.log(res)
     await getNotesFromGoogleSheet()
