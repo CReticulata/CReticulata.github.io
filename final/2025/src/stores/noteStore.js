@@ -57,14 +57,11 @@ export const useNoteStore = defineStore('noteStore', () => {
     })
   }
 
-  async function formatNoteToGoogle(note) {
-    const city = await getCityFromPlaceId(note.id)
-
+  function formatNoteToGoogle(note) {
     return {
       ...note,
       location: JSON.stringify(note.location),
       photos: JSON.stringify(note.photos),
-      city: city,
     }
   }
 

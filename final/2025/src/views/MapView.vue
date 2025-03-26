@@ -1,9 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useNoteStore } from '@/stores/noteStore'
 import Note from '@/components/Note.vue'
-import { onMounted } from 'vue'
-import { watch } from 'vue'
 
 const noteStore = useNoteStore()
 
@@ -18,6 +16,7 @@ const newNote = ref({
   location: { lat: 0, lng: 0 },
   googlemapURL: '',
   address: '',
+  city: '',
   photos: [],
 })
 
@@ -72,18 +71,21 @@ async function getPlaceByIdAndShowInfoWindow(placeId, map) {
 
   // Call fetchFields, passing the desired data fields.
   await place.fetchFields({
-    fields: ['formattedAddress', 'googleMapsURI', 'location', 'displayName'],
+    fields: ['formattedAddress', 'googleMapsURI', 'location', 'displayName', 'adrFormatAddress'],
   })
   // Log the result
   // console.log(place)
 
-  setNote(
-    placeId,
-    place.displayName,
-    { lat: place.location.lat(), lng: place.location.lng() },
-    place.googleMapsURI,
-    place.formattedAddress,
-  )
+  const region = getRegion(place.adrFormatAddress)
+
+  setNote({
+    placeId: placeId,
+    storeName: place.displayName,
+    location: { lat: place.location.lat(), lng: place.location.lng() },
+    googlemapURL: place.googleMapsURI,
+    address: place.formattedAddress,
+    city: region,
+  })
 
   showInfoWindow(place.location, map, place.displayName, place.formattedAddress)
 }
@@ -162,7 +164,7 @@ onMounted(async () => {
     west: noteStore.userLocation.lng - 0.1,
   }
   autocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ['place_id', 'geometry', 'formatted_address', 'name', 'url'],
+    fields: ['place_id', 'geometry', 'formatted_address', 'name', 'url', 'adr_address'],
     bounds: defaultBounds,
   })
 
@@ -173,8 +175,6 @@ onMounted(async () => {
     }
 
     const place = autocomplete.getPlace()
-
-    // console.log(place)
 
     if (!place.geometry || !place.geometry.location) {
       return
@@ -187,16 +187,19 @@ onMounted(async () => {
       map.setZoom(18)
     }
 
-    setNote(
-      place.place_id,
-      place.name,
-      {
+    const region = getRegion(place.adr_address)
+
+    setNote({
+      placeId: place.place_id,
+      storeName: place.name,
+      location: {
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng(),
       },
-      place.url,
-      place.formatted_address,
-    )
+      googlemapURL: place.url,
+      address: place.formatted_address,
+      city: region,
+    })
 
     showInfoWindow(place.geometry.location, map, place.name, place.formatted_address)
   })
@@ -220,6 +223,7 @@ function onCreateNote(event) {
     googlemapURL: '',
     address: '',
     photos: [],
+    city: '',
   }
 
   // 擋住重複的
@@ -232,12 +236,20 @@ function onCreateNote(event) {
   noteStore.createNote(pendingNote)
 }
 
-function setNote(placeId, storeName, location, googlemapURL, address) {
+function setNote({ placeId, storeName, location, googlemapURL, address, city }) {
   newNote.value.id = placeId
   newNote.value.storeName = storeName
   newNote.value.location = location
   newNote.value.googlemapURL = googlemapURL
   newNote.value.address = address
+  newNote.value.city = city
+}
+
+function getRegion(adr) {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(adr, 'text/html')
+  const regionElement = doc.querySelector('.region')
+  return regionElement.textContent
 }
 
 watch(
