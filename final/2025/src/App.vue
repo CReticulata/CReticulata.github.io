@@ -3,6 +3,7 @@ import { onBeforeMount, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { useNoteStore } from '@/stores/noteStore'
 import { decodeJwtResponse } from '@/features/userInfo.js'
+import noteSheetAPI from './features/noteSheetAPI'
 import GoogleSigninButton from './components/GoogleSigninButton.vue'
 
 const noteStore = useNoteStore()
@@ -19,8 +20,10 @@ function initialize() {
   }
 }
 
-function handleCredentialResponse(response) {
+async function handleCredentialResponse(response) {
   localStorage.setItem('Tomato-key', response.credential)
+
+  await noteSheetAPI.SIGNUP()
 
   const responsePayload = decodeJwtResponse(response.credential)
   noteStore.setUserInfoAndGetNotes(responsePayload)

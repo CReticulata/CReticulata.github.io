@@ -90,6 +90,7 @@ function deletePhoto(e) {
   <q-card class="note">
     <q-card-section class="bg-brown-5 text-white note__title-section">
       <div class="text-h6 ellipsis store-name">{{ note.storeName }}</div>
+
       <div class="note__address-info">
         <div class="address-info">
           <div class="text-subtitle2 ellipsis address-info__address">{{ note.address }}</div>
@@ -181,21 +182,38 @@ function deletePhoto(e) {
               ></PhotoCarouselBtns>
             </q-card-section>
           </q-card>
+
+          <div v-if="note.user === noteStore.user.ID">
+            <q-separator spaced />
+            <q-card-actions v-if="!isCreate" align="around">
+              <q-btn flat class="text-negative action-btn" @click="deleteConfirm = true"
+                >刪除</q-btn
+              >
+              <q-btn v-if="!isEdit" flat class="action-btn" @click="isEdit = true">編輯</q-btn>
+              <q-btn v-else flat class="action-btn" @click="onSave">儲存</q-btn>
+            </q-card-actions>
+            <q-card-actions v-else align="around">
+              <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>
+              <q-btn flat class="action-btn" @click="emits('create:note', note)">儲存</q-btn>
+            </q-card-actions>
+          </div>
         </q-expansion-item>
       </q-form>
     </q-card-section>
 
     <q-separator />
 
-    <q-card-actions v-if="!isCreate" align="around">
-      <q-btn flat class="text-negative action-btn" @click="deleteConfirm = true">刪除</q-btn>
-      <q-btn v-if="!isEdit" flat class="action-btn" @click="isEdit = true">編輯</q-btn>
-      <q-btn v-else flat class="action-btn" @click="onSave">儲存</q-btn>
-    </q-card-actions>
-    <q-card-actions v-else align="around">
-      <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>
-      <q-btn flat class="action-btn" @click="emits('create:note', note)">儲存</q-btn>
-    </q-card-actions>
+    <!-- <div v-if="note.user === noteStore.user.ID">
+      <q-card-actions v-if="!isCreate" align="around">
+        <q-btn flat class="text-negative action-btn" @click="deleteConfirm = true">刪除</q-btn>
+        <q-btn v-if="!isEdit" flat class="action-btn" @click="isEdit = true">編輯</q-btn>
+        <q-btn v-else flat class="action-btn" @click="onSave">儲存</q-btn>
+      </q-card-actions>
+      <q-card-actions v-else align="around">
+        <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>
+        <q-btn flat class="action-btn" @click="emits('create:note', note)">儲存</q-btn>
+      </q-card-actions>
+    </div> -->
 
     <q-dialog v-model="uploader" class="uploader">
       <q-card>
