@@ -1,0 +1,12 @@
+{
+  "name": "美食家也可以很健忘",
+  "icons": [
+    {
+      "src": "favicon-tomato.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "https://creticulata.github.io/",
+  "display": "standalone"
+}
