@@ -14,6 +14,16 @@ const router = createRouter({
       component: () => import('@/views/MapView.vue'),
     },
     {
+      path: '/subscription',
+      name: 'Subscription',
+      component: () => import('@/views/SubscriptionView.vue'),
+      beforeEnter: (to, from) => {
+        if (!localStorage.getItem('Tomato-key')) {
+          return { name: 'Notes' }
+        }
+      },
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: { name: 'Notes' },
     },

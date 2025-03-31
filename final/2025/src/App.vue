@@ -2,14 +2,16 @@
 import { onBeforeMount, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { useNoteStore } from '@/stores/noteStore'
+import { useUserStore } from '@/stores/userStore'
 import { decodeJwtResponse } from '@/features/userInfo.js'
 import noteSheetAPI from './features/noteSheetAPI'
 import GoogleSigninButton from './components/GoogleSigninButton.vue'
 
 const noteStore = useNoteStore()
-
+const userStore = useUserStore()
+const router = useRouter()
 const drawer = ref(false)
-const version = ref('1.2.8')
+const version = ref('1.3.0')
 
 function initialize() {
   if (localStorage.getItem('Tomato-key')) {
@@ -17,6 +19,7 @@ function initialize() {
     const responsePayload = decodeJwtResponse(credential)
 
     noteStore.setUserInfoAndGetNotes(responsePayload)
+    userStore.getTargetUserList()
   }
 }
 
@@ -27,12 +30,14 @@ async function handleCredentialResponse(response) {
 
   const responsePayload = decodeJwtResponse(response.credential)
   noteStore.setUserInfoAndGetNotes(responsePayload)
+  userStore.getTargetUserList()
 
   drawer.value = false
 }
 
 function onSignout() {
   // console.log('登出')
+  router.replace({ name: 'Notes' })
   google.accounts.id.disableAutoSelect()
   noteStore.clearUserInfoAndNotes()
   localStorage.removeItem('Tomato-key')
@@ -50,8 +55,6 @@ onBeforeMount(() => {
   initialize()
 })
 
-const router = useRouter()
-
 function handleSwipe({ e, ...newInfo }) {
   if (newInfo.direction === 'left') {
     return router.push({ name: 'Map' })
@@ -60,6 +63,10 @@ function handleSwipe({ e, ...newInfo }) {
   if (newInfo.direction === 'right') {
     return router.push({ name: 'Notes' })
   }
+}
+
+function toSubscriptionList() {
+  return router.push({ name: 'Subscription' })
 }
 </script>
 
@@ -120,6 +127,14 @@ function handleSwipe({ e, ...newInfo }) {
             <div v-else>
               <q-item v-ripple>
                 <q-item-section>{{ noteStore.user.fullName }}，您好！</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="toSubscriptionList">
+                <q-item-section avatar>
+                  <q-icon name="list_alt" />
+                </q-item-section>
+
+                <q-item-section> 訂閱設定 </q-item-section>
               </q-item>
 
               <q-item clickable v-ripple @click="onSignout">

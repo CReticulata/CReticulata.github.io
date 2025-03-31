@@ -21,7 +21,7 @@ export const useNoteStore = defineStore('noteStore', () => {
       email: info.email,
     }
 
-    getNotesFromGoogleSheet()
+    getDataFromGoogleSheet()
   }
 
   function clearUserInfoAndNotes() {
@@ -67,13 +67,19 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   const isSynchronize = ref(false)
 
-  async function getNotesFromGoogleSheet() {
+  async function getDataFromGoogleSheet() {
     isSynchronize.value = true
 
     const res = await noteSheetAPI.GET()
 
     originalNotes.value = formatNotesFromGoogle(res.data)
     notes.value = formatNotesFromGoogle(res.data)
+
+    // privacy
+    user.value = {
+      ...user.value,
+      isPublic: res.privacy === 'public',
+    }
 
     isSynchronize.value = false
   }
@@ -84,7 +90,7 @@ export const useNoteStore = defineStore('noteStore', () => {
     const pendingNote = await formatNoteToGoogle(newNote)
     const res = await noteSheetAPI.UPDATE(pendingNote)
     // console.log(res)
-    await getNotesFromGoogleSheet()
+    await getDataFromGoogleSheet()
 
     isSynchronize.value = false
   }
@@ -157,7 +163,16 @@ export const useNoteStore = defineStore('noteStore', () => {
 
     const res = await noteSheetAPI.DELETE(note)
     // console.log(res)
-    await getNotesFromGoogleSheet()
+    await getDataFromGoogleSheet()
+
+    isSynchronize.value = false
+  }
+
+  async function changePrivacy() {
+    isSynchronize.value = true
+
+    const res = await noteSheetAPI.CHANGEPRIVACY()
+    // console.log(res)
 
     isSynchronize.value = false
   }
@@ -167,7 +182,7 @@ export const useNoteStore = defineStore('noteStore', () => {
     uniqueCities,
     setUserInfoAndGetNotes,
     clearUserInfoAndNotes,
-    getNotesFromGoogleSheet,
+    getDataFromGoogleSheet,
     isSynchronize,
     originalNotes,
     notes,
@@ -177,5 +192,6 @@ export const useNoteStore = defineStore('noteStore', () => {
     createNote,
     updateNote,
     deleteNote,
+    changePrivacy,
   }
 })

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const googleSheetUrl =
-  'https://script.google.com/macros/s/AKfycbxPtvm6VFJFvo0VWy0JSVR7jKFGB8fs6FI3MrO_6IOm0OlUQlN2cGkHSn5LODFcJC7-dg'
+  'https://script.google.com/macros/s/AKfycbwNkQfkGeeqBrKeNtZIMsXC9xfDuX5yR-QHvzIAeE2ckV25RDV_q3kJPBOHSF9dtrhtWw'
 
 const apiClient = axios.create({
   baseURL: `${googleSheetUrl}`,
@@ -29,6 +29,21 @@ export default {
   async SIGNUP() {
     const key = localStorage.getItem('Tomato-key')
     const res = await apiClient.get(`/exec?action=signup&key=${key}`)
+    return res.data
+  },
+  async SUBSCRIBE(email) {
+    const key = localStorage.getItem('Tomato-key')
+    const res = await apiClient.get(`/exec?action=subscribe&email=${email}&key=${key}`)
+    return res.data
+  },
+  async UNSUBSCRIBE(email) {
+    const key = localStorage.getItem('Tomato-key')
+    const res = await apiClient.get(`/exec?action=unsubscribe&email=${email}&key=${key}`)
+    return res.data
+  },
+  async CHANGEPRIVACY() {
+    const key = localStorage.getItem('Tomato-key')
+    const res = await apiClient.get(`/exec?action=change-privacy&key=${key}`)
     return res.data
   },
 }

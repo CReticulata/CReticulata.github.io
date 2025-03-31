@@ -2,10 +2,12 @@
 import { ref, computed } from 'vue'
 import { getDistanceBetweenPoints } from '@/features/utilities'
 import { useNoteStore } from '@/stores/noteStore'
+import { useUserStore } from '@/stores/userStore'
 import PhotoCarouselBtns from './PhotoCarouselBtns.vue'
 import imgurAPI from '@/features/imgurAPI'
 
 const noteStore = useNoteStore()
+const userStore = useUserStore()
 
 const props = defineProps({
   isCreate: {
@@ -20,6 +22,15 @@ const props = defineProps({
 
 // const note = defineModel()
 const note = ref({ ...props.noteInput })
+
+const isOthers = computed(() => note.value.user !== noteStore.user.ID)
+const targetUserName = computed(() => {
+  const targetUser = userStore.targetUserList.find((user) => user.user === note.value.user)
+  if (targetUser) {
+    return targetUser.name
+  }
+  return '載入中'
+})
 
 const files = ref([])
 const uploader = ref(false)
@@ -89,7 +100,19 @@ function deletePhoto(e) {
 <template>
   <q-card class="note">
     <q-card-section class="bg-brown-5 text-white note__title-section">
-      <div class="text-h6 ellipsis store-name">{{ note.storeName }}</div>
+      <div class="row items-center justify-between">
+        <div class="text-h6 ellipsis store-name">{{ note.storeName }}</div>
+        <q-chip
+          v-if="isOthers"
+          class="ellipsis author-name"
+          dense
+          color="yellow"
+          text-color="grey-8"
+          :ripple="false"
+        >
+          {{ targetUserName }}
+        </q-chip>
+      </div>
 
       <div class="note__address-info">
         <div class="address-info">
@@ -316,6 +339,17 @@ function deletePhoto(e) {
 
 .store-name {
   height: 32px;
+  max-width: 220px;
+}
+
+.author-name {
+  max-width: 60px;
+}
+
+:deep(.author-name .q-chip__content) {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .address-info {
