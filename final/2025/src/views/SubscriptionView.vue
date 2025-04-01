@@ -17,7 +17,7 @@ setTimeout(() => {
 }, 5000)
 
 async function subscribe() {
-  if (userStore.subscriptions.includes(emailInput.value)) {
+  if (userStore.targetUserEmails.includes(emailInput.value)) {
     statusString.value = '已經訂閱過囉'
     status.value = true
     emailInput.value = ''
@@ -129,7 +129,7 @@ function changePrivacy() {
         </div>
 
         <Subscription
-          v-for="(user, index) in userStore.subscriptions"
+          v-for="(user, index) in userStore.targetUserEmails"
           :key="index"
           :user="user"
           @remove:user="(email) => unsubscribe(email)"

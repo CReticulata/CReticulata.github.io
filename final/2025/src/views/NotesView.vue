@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useNoteStore } from '@/stores/noteStore'
+import { useUserStore } from '@/stores/userStore'
 import { getDistanceBetweenPoints } from '@/features/utilities'
 import Note from '@/components/Note.vue'
 import SettingOptions from '@/components/SettingOptions.vue'
 
 const noteStore = useNoteStore()
+const userStore = useUserStore()
 
 const isLoading = ref(true)
 const menu = ref(false)
@@ -29,6 +31,11 @@ const distanceLabel = computed(() => {
       return '所有距離'
   }
 })
+
+const users = computed(() => {
+  return [noteStore.user.fullName].concat(userStore.targetUserNames)
+})
+const userFilterSettings = ref([])
 
 const filteredNotes = computed(() => {
   let result = [...noteStore.notesSortedByDistance]
@@ -61,15 +68,32 @@ const filteredNotes = computed(() => {
     })
   }
 
-  let selectedCities
-  if (cityFilterSettings.value) {
-    selectedCities = cityFilterSettings.value
-      .filter((cityFilter) => cityFilter.value === true)
-      .map((cityFilter) => cityFilter.name)
+  const selectedCities = cityFilterSettings.value
+    .filter((cityFilter) => cityFilter.value === true)
+    .map((cityFilter) => cityFilter.name)
 
-    if (selectedCities.length > 0) {
-      result = [...result].filter((note) => selectedCities.includes(note.city))
-    }
+  if (selectedCities.length > 0) {
+    result = [...result].filter((note) => selectedCities.includes(note.city))
+  }
+
+  const selectedUserNames = userFilterSettings.value
+    .filter((userFilter) => userFilter.value === true)
+    .map((userFilter) => userFilter.name)
+
+  if (selectedUserNames.length > 0) {
+    result = [...result].filter((note) => {
+      // 如果是本人的note
+      if (note.user === noteStore.user.ID) {
+        return selectedUserNames.includes(noteStore.user.fullName)
+      }
+
+      // 如果不是本人的note
+      const authorInfoOfNote = userStore.targetUserList.find(
+        (targetUser) => targetUser.user === note.user,
+      )
+
+      return selectedUserNames.includes(authorInfoOfNote.name)
+    })
   }
 
   return result
@@ -130,6 +154,7 @@ setTimeout(() => {
 <template>
   <div class="notes column flex-center">
     <div class="row flex-center q-gutter-md q-pb-md">
+      <pre>{{ users }}</pre>
       <div class="search">
         <q-input
           class="search__input"
@@ -179,6 +204,16 @@ setTimeout(() => {
                       ></SettingOptions>
                     </div>
                   </div>
+                  <div class="column flex-center filter-option">
+                    <div class="text-md text-grey-8 q-mb-sm">依作者</div>
+                    <div class="row">
+                      <SettingOptions
+                        :options="users"
+                        :settings="userFilterSettings"
+                        @update:optionSettings="userFilterSettings = $event"
+                      ></SettingOptions>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="row justify-end">
@@ -195,7 +230,7 @@ setTimeout(() => {
       還沒有筆記喔！
     </div>
     <div class="row flex-center q-gutter-lg">
-      <div class="note" v-for="(note, index) in sortedFilteredNotes" :key="note.id">
+      <div class="note" v-for="(note, index) in sortedFilteredNotes" :key="note.id + note.user">
         <Note
           :noteInput="sortedFilteredNotes[index]"
           @update:note="noteStore.updateNote($event)"

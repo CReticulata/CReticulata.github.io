@@ -6,7 +6,8 @@ export const useUserStore = defineStore('userStore', () => {
   const targetUserList = ref([
     // { user: '114522663789798422365', name: '橘冬子', email: 'maple51327@gmail.com' },
   ])
-  const subscriptions = computed(() => targetUserList.value.map((target) => target.email))
+  const targetUserEmails = computed(() => targetUserList.value.map((target) => target.email))
+  const targetUserNames = computed(() => targetUserList.value.map((target) => target.name))
 
   async function getTargetUserList() {
     const res = await noteSheetAPI.GET()
@@ -27,7 +28,8 @@ export const useUserStore = defineStore('userStore', () => {
 
   return {
     targetUserList,
-    subscriptions,
+    targetUserEmails,
+    targetUserNames,
     getTargetUserList,
     subscribe,
     unsubscribe,
