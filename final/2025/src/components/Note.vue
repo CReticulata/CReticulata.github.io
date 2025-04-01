@@ -202,6 +202,7 @@ function deletePhoto(e) {
               <PhotoCarouselBtns
                 :photos="note.photos"
                 @delete:photo="deletePhoto"
+                :deletable="!isOthers"
               ></PhotoCarouselBtns>
             </q-card-section>
           </q-card>

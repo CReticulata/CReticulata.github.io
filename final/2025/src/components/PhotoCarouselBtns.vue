@@ -8,6 +8,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  deletable: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const carousel = ref(false)
@@ -132,7 +136,7 @@ function deletePhoto() {
       >
         <q-carousel-slide v-for="(photo, index) in photos" :name="index" :img-src="photo" />
 
-        <template v-slot:control>
+        <template v-if="deletable" v-slot:control>
           <q-carousel-control position="bottom-right" :offset="[18, 18]">
             <q-btn
               round
