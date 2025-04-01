@@ -154,7 +154,6 @@ setTimeout(() => {
 <template>
   <div class="notes column flex-center">
     <div class="row flex-center q-gutter-md q-pb-md">
-      <pre>{{ users }}</pre>
       <div class="search">
         <q-input
           class="search__input"
