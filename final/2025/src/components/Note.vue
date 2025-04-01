@@ -100,7 +100,7 @@ function deletePhoto(e) {
 <template>
   <q-card class="note">
     <q-card-section class="bg-brown-5 text-white note__title-section">
-      <div class="row items-center justify-between">
+      <div class="row items-center justify-between note__name">
         <div class="text-h6 ellipsis store-name">{{ note.storeName }}</div>
         <q-chip
           v-if="isOthers"
@@ -325,6 +325,10 @@ function deletePhoto(e) {
     height: 108px;
   }
 
+  &__name {
+    flex-wrap: nowrap;
+  }
+
   &__address-info {
     display: flex;
     gap: 5px;
@@ -341,10 +345,6 @@ function deletePhoto(e) {
 .store-name {
   height: 32px;
   max-width: 220px;
-}
-
-.author-name {
-  max-width: 60px;
 }
 
 :deep(.author-name .q-chip__content) {
