@@ -126,7 +126,7 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   function createNote(newNote) {
     // 擋掉重複的筆記
-    if (notes.value.find((note) => note.id === newNote.id)) {
+    if (notes.value.find((note) => note.id === newNote.id && note.user === newNote.user)) {
       return
     }
 

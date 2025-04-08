@@ -107,7 +107,11 @@ async function showInfoWindow(latLng, map, placeName, placeAddress) {
 
     if (button) {
       button.addEventListener('click', () => {
-        if (noteStore.notes.find((note) => note.id === newNote.value.id)) {
+        if (
+          noteStore.notes.find(
+            (note) => note.id === newNote.value.id && note.user === noteStore.user.ID,
+          )
+        ) {
           isExist.value = true
           infoWindow.close()
           return
@@ -227,7 +231,9 @@ function onCreateNote(event) {
   }
 
   // 擋住重複的
-  if (noteStore.notes.find((note) => note.id === pendingNote.id)) {
+  if (
+    noteStore.notes.find((note) => note.id === pendingNote.id && note.user === noteStore.user.ID)
+  ) {
     isExist.value = true
 
     return
