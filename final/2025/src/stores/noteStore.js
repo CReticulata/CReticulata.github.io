@@ -7,6 +7,7 @@ export const useNoteStore = defineStore('noteStore', () => {
   const originalNotes = ref([])
   const notes = ref([])
   const user = ref({})
+  const isSynchronize = ref(false)
 
   const uniqueCities = computed(() => {
     const allCities = notes.value.map((note) => note.city).filter((city) => city != null)
@@ -64,8 +65,6 @@ export const useNoteStore = defineStore('noteStore', () => {
       photos: JSON.stringify(note.photos),
     }
   }
-
-  const isSynchronize = ref(false)
 
   async function getDataFromGoogleSheet() {
     isSynchronize.value = true

@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-import { Quasar } from 'quasar'
+import { Quasar, Loading } from 'quasar'
 import quasarLang from 'quasar/lang/zh-TW'
 
 // Import icon libraries
@@ -28,7 +28,9 @@ app.use(createPinia())
 app.use(router)
 
 app.use(Quasar, {
-  plugins: {}, // import Quasar plugins and add here
+  plugins: {
+    Loading,
+  }, // import Quasar plugins and add here
   lang: quasarLang,
 })
 

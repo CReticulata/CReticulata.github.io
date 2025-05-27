@@ -4,7 +4,8 @@ import { getDistanceBetweenPoints } from '@/features/utilities'
 import { useNoteStore } from '@/stores/noteStore'
 import { useUserStore } from '@/stores/userStore'
 import PhotoCarouselBtns from './PhotoCarouselBtns.vue'
-import imgurAPI from '@/features/imgurAPI'
+// import imgurAPI from '@/features/imgurAPI'
+import imgbbAPI from '@/features/imgbbAPI'
 
 const noteStore = useNoteStore()
 const userStore = useUserStore()
@@ -72,16 +73,32 @@ function onSave() {
   return emits('update:note', note.value)
 }
 
+// imgur 版本
+// async function upload() {
+//   isUploading.value = true
+//   const uploadedPhotos = []
+//   for (const file of files.value) {
+//     const formData = new FormData()
+//     formData.append('image', file)
+//     formData.append('type', 'image')
+
+//     const res = await imgurAPI.POST(formData)
+//     uploadedPhotos.push(res.data.link)
+//   }
+
+//   note.value.photos = [...note.value.photos, ...uploadedPhotos].slice(0, 3)
+//   isUploading.value = false
+//   uploader.value = false
+//   return emits('update:note', note.value)
+// }
+
+// imgbb 版本
 async function upload() {
   isUploading.value = true
   const uploadedPhotos = []
   for (const file of files.value) {
-    const formData = new FormData()
-    formData.append('image', file)
-    formData.append('type', 'image')
-
-    const res = await imgurAPI.POST(formData)
-    uploadedPhotos.push(res.data.link)
+    const res = await imgbbAPI.POST(file)
+    uploadedPhotos.push(res.data.url)
   }
 
   note.value.photos = [...note.value.photos, ...uploadedPhotos].slice(0, 3)
@@ -198,7 +215,6 @@ function deletePhoto(e) {
               >
               </q-btn>
 
-              <!-- 之後改成v-model="note.photos" -->
               <PhotoCarouselBtns
                 :photos="note.photos"
                 @delete:photo="deletePhoto"
@@ -226,18 +242,6 @@ function deletePhoto(e) {
     </q-card-section>
 
     <q-separator />
-
-    <!-- <div v-if="note.user === noteStore.user.ID">
-      <q-card-actions v-if="!isCreate" align="around">
-        <q-btn flat class="text-negative action-btn" @click="deleteConfirm = true">刪除</q-btn>
-        <q-btn v-if="!isEdit" flat class="action-btn" @click="isEdit = true">編輯</q-btn>
-        <q-btn v-else flat class="action-btn" @click="onSave">儲存</q-btn>
-      </q-card-actions>
-      <q-card-actions v-else align="around">
-        <q-btn flat class="text-grey-8 action-btn" @click="cancelConfirm = true">取消</q-btn>
-        <q-btn flat class="action-btn" @click="emits('create:note', note)">儲存</q-btn>
-      </q-card-actions>
-    </div> -->
 
     <q-dialog v-model="uploader" class="uploader">
       <q-card>

@@ -1,7 +1,21 @@
 <script setup>
-import { ref, computed, watchEffect } from 'vue'
-import { dom } from 'quasar'
-import imgurAPI from '@/features/imgurAPI'
+import { ref, computed, watch } from 'vue'
+import { dom, useQuasar } from 'quasar'
+// import imgurAPI from '@/features/imgurAPI'
+import imgbbAPI from '@/features/imgbbAPI'
+
+const $q = useQuasar()
+const showLoading = () => {
+  $q.loading.show({
+    message: '載入圖片中...',
+    spinnerColor: 'green',
+    spinnerSize: '4em',
+  })
+}
+
+const hideLoading = () => {
+  $q.loading.hide()
+}
 
 const props = defineProps({
   photos: {
@@ -17,38 +31,27 @@ const props = defineProps({
 const carousel = ref(false)
 const slide = ref(1)
 const deleteDialog = ref(false)
+const isDoingDeleting = ref(false)
 
-const originalWidthAndHeightOfPhotos = ref([
-  {
-    width: 640,
-    height: 480,
-  },
-  {
-    width: 640,
-    height: 480,
-  },
-  {
-    width: 640,
-    height: 480,
-  },
-])
+const originalWidthAndHeightOfPhotos = ref([])
 
-watchEffect(async () => {
-  const imageHashes = props.photos.map(
-    (photo) => photo.split('https://i.imgur.com/')[1].split('.')[0],
-  )
+// imgur 版本
+// watchEffect(async () => {
+//   const imageHashes = props.photos.map(
+//     (photo) => photo.split('https://i.imgur.com/')[1].split('.')[0],
+//   )
 
-  const results = []
-  for (const imageHash of imageHashes) {
-    const res = await imgurAPI.GET(imageHash)
-    results.push({
-      width: res.data.width,
-      height: res.data.height,
-    })
-  }
+//   const results = []
+//   for (const imageHash of imageHashes) {
+//     const res = await imgurAPI.GET(imageHash)
+//     results.push({
+//       width: res.data.width,
+//       height: res.data.height,
+//     })
+//   }
 
-  originalWidthAndHeightOfPhotos.value = results
-})
+//   originalWidthAndHeightOfPhotos.value = results
+// })
 
 const widthAndHeightOfPhotos = computed(() => {
   return originalWidthAndHeightOfPhotos.value.map((photo) => {
@@ -93,7 +96,18 @@ const widthAndHeightOfPhotos = computed(() => {
 
 const emits = defineEmits(['delete:photo'])
 
-function openCarousel(index) {
+async function openCarousel(index) {
+  // 如果還沒拿到尺寸就不能打開
+  if (!originalWidthAndHeightOfPhotos.value[index]) {
+    showLoading()
+    await getOriginalWidthAndHeightOfPhotos(props.photos)
+    hideLoading()
+
+    slide.value = index
+    carousel.value = true
+    return
+  }
+
   slide.value = index
   carousel.value = true
 }
@@ -103,11 +117,38 @@ function openDeleteDialog() {
 }
 
 function deletePhoto() {
+  isDoingDeleting.value = true
   const index = slide.value
   const photos = [...props.photos.slice(0, index), ...props.photos.slice(index + 1)]
   carousel.value = false
   return emits('delete:photo', photos)
 }
+
+// imgbb 版本
+async function getOriginalWidthAndHeightOfPhotos(photos) {
+  const promises = photos.map(async (photo) => {
+    const res = await imgbbAPI.POST(photo)
+    return {
+      width: res.data.width,
+      height: res.data.height,
+    }
+  })
+
+  const results = await Promise.all(promises)
+  originalWidthAndHeightOfPhotos.value = results
+}
+
+watch(
+  () => props.photos,
+  async () => {
+    if (isDoingDeleting.value) {
+      isDoingDeleting.value = false
+      return
+    }
+
+    await getOriginalWidthAndHeightOfPhotos(props.photos)
+  },
+)
 </script>
 
 <template>
