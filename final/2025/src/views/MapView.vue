@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useNoteStore } from '@/stores/noteStore'
 import Note from '@/components/Note.vue'
 
@@ -21,6 +21,7 @@ const newNote = ref({
 })
 
 const searchInput = ref('')
+const placePredictions = ref([])
 
 const isNoteOpen = ref(false)
 const isExist = computed(() => noteStore.notes.find((note) => note.id === newNote.value.id))
@@ -33,7 +34,6 @@ const reviewNote = ref(false)
 // Initialize and add the map
 let map
 let infoWindow
-let autocomplete
 
 async function initMap() {
   // The location of userLocation
@@ -41,6 +41,7 @@ async function initMap() {
   // Request needed libraries.
   const { Map } = await google.maps.importLibrary('maps')
   const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
+  await google.maps.importLibrary('places')
 
   // The map, centered at userLocation
   map = new Map(document.getElementById('map'), {
@@ -111,8 +112,6 @@ async function getPlaceByIdAndShowInfoWindow(placeId, map) {
   await place.fetchFields({
     fields: ['formattedAddress', 'googleMapsURI', 'location', 'displayName', 'adrFormatAddress'],
   })
-  // Log the result
-  // console.log(place)
 
   const region = getRegion(place.adrFormatAddress)
 
@@ -182,57 +181,91 @@ function buildInfoWindowContent(placeName, placeAddress, isExist = false, isOwnN
   return content
 }
 
-onMounted(async () => {
-  const input = document.querySelector('.search-input input')
-
-  await google.maps.importLibrary('places')
-  const defaultBounds = {
-    north: noteStore.userLocation.lat + 0.1,
-    south: noteStore.userLocation.lat - 0.1,
-    east: noteStore.userLocation.lng + 0.1,
-    west: noteStore.userLocation.lng - 0.1,
+async function makeAutocompleteRequest() {
+  if (searchInput.value === '') {
+    placePredictions.value = []
+    return
   }
-  autocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ['place_id', 'geometry', 'formatted_address', 'name', 'url', 'adr_address'],
-    bounds: defaultBounds,
-  })
 
-  // autocomplete.bindTo('bounds', map)
-  autocomplete.addListener('place_changed', () => {
-    if (infoWindow) {
-      infoWindow.close()
-    }
-
-    const place = autocomplete.getPlace()
-
-    if (!place.geometry || !place.geometry.location) {
-      return
-    }
-
-    if (place.geometry.viewport) {
-      map.fitBounds(place.geometry.viewport)
-    } else {
-      map.setCenter(place.geometry.location)
-      map.setZoom(18)
-    }
-
-    const region = getRegion(place.adr_address)
-
-    setNote({
-      placeId: place.place_id,
-      storeName: place.name,
-      location: {
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
+  const request = {
+    input: searchInput.value,
+    locationBias: {
+      radius: 100,
+      center: {
+        lat: noteStore.userLocation.lat,
+        lng: noteStore.userLocation.lng,
       },
-      googlemapURL: place.url,
-      address: place.formatted_address,
-      city: region,
-    })
+    },
+  }
 
-    showInfoWindow(place.geometry.location, map, place.name, place.formatted_address)
+  const { suggestions } =
+    await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
+
+  placePredictions.value = suggestions.map((suggestion) => suggestion.placePrediction)
+}
+
+function getPlaceMainText(placePrediction) {
+  return placePrediction.Nq.Nh[3][0][0]
+}
+
+function getPlaceSecondaryText(placePrediction) {
+  return placePrediction.Nq.Nh[3][1][0]
+}
+
+// Event handler for clicking on a suggested place.
+async function onPlaceSelected(place) {
+  await place.fetchFields({
+    fields: [
+      'id',
+      'viewport',
+      'location',
+      'formattedAddress',
+      'displayName',
+      'googleMapsURI',
+      'adrFormatAddress',
+    ],
   })
-})
+
+  if (!place.viewport || !place.location) {
+    return
+  }
+
+  if (place.viewport) {
+    map.fitBounds(place.viewport)
+  } else {
+    map.setCenter(place.location)
+    map.setZoom(18)
+  }
+
+  const region = getRegion(place.adrFormatAddress)
+
+  setNote({
+    placeId: place.id,
+    storeName: place.displayName,
+    location: {
+      lat: place.location.lat(),
+      lng: place.location.lng(),
+    },
+    googlemapURL: place.googleMapsURI,
+    address: place.formattedAddress,
+    city: region,
+  })
+
+  showInfoWindow(place.location, map, place.displayName, place.formattedAddress)
+
+  clearAutocomplete()
+}
+
+function clearAutocomplete() {
+  searchInput.value = ''
+  placePredictions.value = []
+}
+
+// Helper function to refresh the session token.
+// function refreshToken(request) {
+//   // Create a new session token and add it to the request.
+//   request.sessionToken = new google.maps.places.AutocompleteSessionToken()
+// }
 
 function onCreateNote(event) {
   infoWindow.close()
@@ -274,20 +307,19 @@ function getRegion(adr) {
   return regionElement.textContent
 }
 
+function onDeleteNote(event) {
+  noteStore.deleteNote(event)
+
+  isNoteOpen.value = false
+  infoWindow.close()
+}
+
 initMap()
 
 watch(
   () => noteStore.userLocation,
   () => {
     initMap()
-    autocomplete.setOptions({
-      bounds: {
-        north: noteStore.userLocation.lat + 0.1,
-        south: noteStore.userLocation.lat - 0.1,
-        east: noteStore.userLocation.lng + 0.1,
-        west: noteStore.userLocation.lng - 0.1,
-      },
-    })
   },
 )
 
@@ -308,13 +340,41 @@ watch(
 
 <template>
   <div>
-    <q-input
-      v-model="searchInput"
-      class="search-input"
-      outlined
-      placeholder="在這裡搜尋"
-      color="red"
-    ></q-input>
+    <div class="autocomplete">
+      <q-input
+        v-model="searchInput"
+        @update:modelValue="makeAutocompleteRequest"
+        @blur="clearAutocomplete"
+        class="search-input"
+        outlined
+        placeholder="在這裡搜尋"
+        color="red"
+      ></q-input>
+
+      <!-- <div v-for="(item, index) in placePredictions" :key="index">
+        <div>{{ item }}</div>
+        {{ console.log(placePredictions.length) }}
+      </div> -->
+
+      <div v-if="placePredictions.length > 0" class="suggestion-list">
+        <div class="list">
+          <q-list bordered separator>
+            <q-item
+              v-for="(placePrediction, index) in placePredictions"
+              :key="index"
+              clickable
+              v-ripple
+              @click="() => onPlaceSelected(placePrediction.toPlace())"
+            >
+              <q-item-section>
+                <q-item-label>{{ getPlaceMainText(placePrediction) }}</q-item-label>
+                <q-item-label caption>{{ getPlaceSecondaryText(placePrediction) }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </div>
+    </div>
 
     <div class="separator row flex-center">
       <div class="text text-grey-7 q-py-sm">或直接點選地點</div>
@@ -323,13 +383,6 @@ watch(
     <div id="map" @touchstart.stop @mousedown.stop></div>
 
     <q-dialog v-model="isNoteOpen" :persistent="!reviewNote">
-      <!-- <Note
-        v-if="reviewNote"
-        :isCreate="false"
-        :noteInput="noteStore.notes.filter((note) => note.id === newNote.id)[0]"
-        @update:note="noteStore.updateNote($event)"
-        @delete:note="noteStore.deleteNote($event)"
-      ></Note> -->
       <div v-if="reviewNote" class="notes">
         <div
           v-for="note in noteStore.notes.filter((note) => note.id === newNote.id)"
@@ -372,6 +425,18 @@ watch(
   height: calc(100dvh - 128px - 48px - 93px - 60px);
   min-height: 500px;
   width: 100%;
+}
+
+.suggestion-list {
+  position: relative;
+}
+
+.list {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  background-color: $white;
 }
 
 :deep(.info-window) {
