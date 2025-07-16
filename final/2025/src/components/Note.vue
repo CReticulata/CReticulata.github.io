@@ -65,7 +65,7 @@ const distanceText = computed(() => {
   return `${distance} 公尺`
 })
 
-const emits = defineEmits(['delete:note', 'update:isCreate', 'create:note', 'update:note'])
+const emits = defineEmits(['delete:note', 'update:isNoteOpen', 'create:note', 'update:note'])
 
 function onSave() {
   isEdit.value = false
@@ -311,7 +311,7 @@ function deletePhoto(e) {
             label="放棄編輯"
             color="negative"
             v-close-popup
-            @click="emits('update:isCreate', false)"
+            @click="emits('update:isNoteOpen', false)"
           />
           <q-btn flat label="繼續編輯" color="primary" v-close-popup />
         </q-card-actions>

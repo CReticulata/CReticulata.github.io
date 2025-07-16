@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useNoteStore } from '@/stores/noteStore'
 import Note from '@/components/Note.vue'
 
@@ -22,9 +22,13 @@ const newNote = ref({
 
 const searchInput = ref('')
 
-const isCreate = ref(false)
-const isExist = ref(false)
+const isNoteOpen = ref(false)
+const isExist = computed(() => noteStore.notes.find((note) => note.id === newNote.value.id))
+const isOwnNote = computed(() =>
+  noteStore.notes.find((note) => note.id === newNote.value.id && note.user === noteStore.user.ID),
+)
 const isNotLogin = ref(false)
+const reviewNote = ref(false)
 
 // Initialize and add the map
 let map
@@ -53,10 +57,44 @@ async function initMap() {
     title: '目前位置',
   })
 
+  setMarkers()
+
   map.addListener('click', (mapsMouseEvent) => {
     if (mapsMouseEvent.placeId) {
       getPlaceByIdAndShowInfoWindow(mapsMouseEvent.placeId, map)
     }
+  })
+}
+
+async function setMarkers() {
+  const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
+
+  const markers = [...noteStore.notes].map((note) => {
+    const tomato = document.createElement('div')
+    tomato.classList.add('tomato')
+    const tomatoImg = document.createElement('img')
+    tomatoImg.src = new URL('/favicon-tomato.png', import.meta.url).href
+    tomato.appendChild(tomatoImg)
+
+    const marker = new AdvancedMarkerElement({
+      map: map,
+      position: { lat: note.location.lat, lng: note.location.lng },
+      content: tomato,
+      title: note.storeName,
+      gmpClickable: true,
+    })
+
+    marker.placeId = note.id
+
+    return marker
+  })
+
+  markers.forEach((marker) => {
+    marker.addEventListener('click', () => {
+      if (marker.placeId) {
+        getPlaceByIdAndShowInfoWindow(marker.placeId, map)
+      }
+    })
   })
 }
 
@@ -93,9 +131,13 @@ async function getPlaceByIdAndShowInfoWindow(placeId, map) {
 async function showInfoWindow(latLng, map, placeName, placeAddress) {
   const { InfoWindow } = await google.maps.importLibrary('maps')
 
+  if (infoWindow) {
+    infoWindow.close()
+  }
+
   infoWindow = new InfoWindow({
     position: latLng,
-    content: buildInfoWindowContent(placeName, placeAddress),
+    content: buildInfoWindowContent(placeName, placeAddress, isExist.value, isOwnNote.value),
     maxWidth: 250,
   })
 
@@ -103,59 +145,42 @@ async function showInfoWindow(latLng, map, placeName, placeAddress) {
 
   // Add event listener after the infowindow is opened.
   google.maps.event.addListener(infoWindow, 'domready', function () {
-    const button = document.querySelector('.create-note')
+    const reviewButton = document.querySelector('.review-note')
+    const createButton = document.querySelector('.create-note')
 
-    if (button) {
-      button.addEventListener('click', () => {
-        if (
-          noteStore.notes.find(
-            (note) => note.id === newNote.value.id && note.user === noteStore.user.ID,
-          )
-        ) {
-          isExist.value = true
-          infoWindow.close()
-          return
-        }
+    if (reviewButton) {
+      reviewButton.addEventListener('click', () => {
+        reviewNote.value = true
+        isNoteOpen.value = true
+      })
+    }
 
+    if (createButton) {
+      createButton.addEventListener('click', () => {
         if (!noteStore.user.ID) {
           isNotLogin.value = true
           infoWindow.close()
           return
         }
-        isCreate.value = true
+        reviewNote.value = false
+        isNoteOpen.value = true
       })
     }
   })
 }
 
-function buildInfoWindowContent(placeName, placeAddress) {
+function buildInfoWindowContent(placeName, placeAddress, isExist = false, isOwnNote = false) {
   let content = `
     <div class="info-window">
       <h6>${placeName}</h6>
       <p>${placeAddress}</p>
       <div class=info-window__button>
-        <button class="create-note">新增筆記</button>
+        ${isExist ? '<button class="review-note">查看筆記</button>' : ''}
+        ${isOwnNote ? '' : '<button class="create-note">新增筆記</button>'}
       </div>
     </div>`
   return content
 }
-
-initMap()
-
-watch(
-  () => noteStore.userLocation,
-  () => {
-    initMap()
-    autocomplete.setOptions({
-      bounds: {
-        north: noteStore.userLocation.lat + 0.1,
-        south: noteStore.userLocation.lat - 0.1,
-        east: noteStore.userLocation.lng + 0.1,
-        west: noteStore.userLocation.lng - 0.1,
-      },
-    })
-  },
-)
 
 onMounted(async () => {
   const input = document.querySelector('.search-input input')
@@ -212,7 +237,7 @@ onMounted(async () => {
 function onCreateNote(event) {
   infoWindow.close()
 
-  isCreate.value = false
+  isNoteOpen.value = false
 
   const pendingNote = event
   newNote.value = {
@@ -228,15 +253,6 @@ function onCreateNote(event) {
     address: '',
     photos: [],
     city: '',
-  }
-
-  // 擋住重複的
-  if (
-    noteStore.notes.find((note) => note.id === pendingNote.id && note.user === noteStore.user.ID)
-  ) {
-    isExist.value = true
-
-    return
   }
 
   noteStore.createNote(pendingNote)
@@ -258,10 +274,34 @@ function getRegion(adr) {
   return regionElement.textContent
 }
 
+initMap()
+
+watch(
+  () => noteStore.userLocation,
+  () => {
+    initMap()
+    autocomplete.setOptions({
+      bounds: {
+        north: noteStore.userLocation.lat + 0.1,
+        south: noteStore.userLocation.lat - 0.1,
+        east: noteStore.userLocation.lng + 0.1,
+        west: noteStore.userLocation.lng - 0.1,
+      },
+    })
+  },
+)
+
 watch(
   () => noteStore.user,
   () => {
     newNote.value.user = noteStore.user.ID
+  },
+)
+
+watch(
+  () => noteStore.notes,
+  () => {
+    setMarkers()
   },
 )
 </script>
@@ -282,26 +322,34 @@ watch(
 
     <div id="map" @touchstart.stop @mousedown.stop></div>
 
-    <q-dialog v-model="isCreate" persistent>
+    <q-dialog v-model="isNoteOpen" :persistent="!reviewNote">
+      <!-- <Note
+        v-if="reviewNote"
+        :isCreate="false"
+        :noteInput="noteStore.notes.filter((note) => note.id === newNote.id)[0]"
+        @update:note="noteStore.updateNote($event)"
+        @delete:note="noteStore.deleteNote($event)"
+      ></Note> -->
+      <div v-if="reviewNote" class="notes">
+        <div
+          v-for="note in noteStore.notes.filter((note) => note.id === newNote.id)"
+          :key="note.id + note.user"
+        >
+          <Note
+            :noteInput="note"
+            @update:note="noteStore.updateNote($event)"
+            @delete:note="noteStore.deleteNote($event)"
+          ></Note>
+        </div>
+      </div>
+
       <Note
+        v-else
         :isCreate="true"
-        @update:isCreate="isCreate = $event"
+        @update:isNoteOpen="isNoteOpen = $event"
         :noteInput="newNote"
         @create:note="onCreateNote"
       ></Note>
-    </q-dialog>
-
-    <q-dialog v-model="isExist">
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-icon name="warning" color="negative" size="24px" />
-          <span class="q-ml-sm">已經寫過這家店的筆記囉！</span>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
     </q-dialog>
 
     <q-dialog v-model="isNotLogin">
@@ -361,5 +409,28 @@ watch(
 :deep(.info-window .info-window__button) {
   width: 100%;
   text-align: center;
+}
+
+:deep(.tomato) {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: $white;
+  border: 2px solid $red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+  }
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>
