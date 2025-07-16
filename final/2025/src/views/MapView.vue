@@ -34,6 +34,7 @@ const reviewNote = ref(false)
 // Initialize and add the map
 let map
 let infoWindow
+let markers = [] // 儲存所有 marker 的引用
 
 async function initMap() {
   // The location of userLocation
@@ -52,7 +53,7 @@ async function initMap() {
   })
 
   // The marker, positioned at userLocation
-  const marker = new AdvancedMarkerElement({
+  new AdvancedMarkerElement({
     map: map,
     position: userLocation,
     title: '目前位置',
@@ -70,7 +71,13 @@ async function initMap() {
 async function setMarkers() {
   const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
 
-  const markers = [...noteStore.notes].map((note) => {
+  markers.forEach((marker) => {
+    marker.map = null
+  })
+  markers = []
+
+  // 創建新的 marker
+  markers = [...noteStore.notes].map((note) => {
     const tomato = document.createElement('div')
     tomato.classList.add('tomato')
     const tomatoImg = document.createElement('img')
@@ -391,7 +398,7 @@ watch(
           <Note
             :noteInput="note"
             @update:note="noteStore.updateNote($event)"
-            @delete:note="noteStore.deleteNote($event)"
+            @delete:note="onDeleteNote"
           ></Note>
         </div>
       </div>
