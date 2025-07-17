@@ -351,12 +351,15 @@ watch(
       <q-input
         v-model="searchInput"
         @update:modelValue="makeAutocompleteRequest"
-        @blur="clearAutocomplete"
         class="search-input"
         outlined
         placeholder="在這裡搜尋"
         color="red"
-      ></q-input>
+      >
+        <template v-slot:append>
+          <q-icon name="close" @click="clearAutocomplete" class="cursor-pointer" />
+        </template>
+      </q-input>
 
       <!-- <div v-for="(item, index) in placePredictions" :key="index">
         <div>{{ item }}</div>
