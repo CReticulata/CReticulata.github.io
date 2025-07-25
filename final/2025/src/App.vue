@@ -11,7 +11,7 @@ const noteStore = useNoteStore()
 const userStore = useUserStore()
 const router = useRouter()
 const drawer = ref(false)
-const version = ref('2.2.0')
+const version = ref('2.2.1')
 
 function initialize() {
   if (localStorage.getItem('Tomato-key')) {

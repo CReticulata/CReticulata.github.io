@@ -208,15 +208,13 @@ async function makeAutocompleteRequest() {
   const { suggestions } =
     await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
 
-  placePredictions.value = suggestions.map((suggestion) => suggestion.placePrediction)
-}
-
-function getPlaceMainText(placePrediction) {
-  return placePrediction.Nq.Nh[3][0][0]
-}
-
-function getPlaceSecondaryText(placePrediction) {
-  return placePrediction.Nq.Nh[3][1][0]
+  placePredictions.value = suggestions.map((suggestion) => {
+    return {
+      placePredictionObject: suggestion.placePrediction,
+      mainText: suggestion.placePrediction.mainText || '',
+      secondaryText: suggestion.placePrediction.secondaryText || '',
+    }
+  })
 }
 
 // Event handler for clicking on a suggested place.
@@ -361,11 +359,6 @@ watch(
         </template>
       </q-input>
 
-      <!-- <div v-for="(item, index) in placePredictions" :key="index">
-        <div>{{ item }}</div>
-        {{ console.log(placePredictions.length) }}
-      </div> -->
-
       <div v-if="placePredictions.length > 0" class="suggestion-list">
         <div class="list">
           <q-list bordered separator>
@@ -374,11 +367,11 @@ watch(
               :key="index"
               clickable
               v-ripple
-              @click="() => onPlaceSelected(placePrediction.toPlace())"
+              @click="() => onPlaceSelected(placePrediction.placePredictionObject.toPlace())"
             >
               <q-item-section>
-                <q-item-label>{{ getPlaceMainText(placePrediction) }}</q-item-label>
-                <q-item-label caption>{{ getPlaceSecondaryText(placePrediction) }}</q-item-label>
+                <q-item-label>{{ placePrediction.mainText }}</q-item-label>
+                <q-item-label caption>{{ placePrediction.secondaryText }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
