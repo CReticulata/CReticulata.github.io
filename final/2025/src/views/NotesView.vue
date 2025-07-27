@@ -41,7 +41,12 @@ const filteredNotes = computed(() => {
   let result = [...noteStore.notesSortedByDistance]
 
   if (searchInput.value) {
-    result = [...result].filter((note) => note.storeName.includes(searchInput.value))
+    result = [...result].filter(
+      (note) =>
+        note.storeName.includes(searchInput.value) ||
+        note.pros.includes(searchInput.value) ||
+        note.cons.includes(searchInput.value),
+    )
   }
 
   if (distanceFilter.value) {
@@ -159,7 +164,7 @@ setTimeout(() => {
           class="search__input"
           outlined
           dense
-          placeholder="以店名搜尋"
+          placeholder="以關鍵字搜尋"
           color="green"
           v-model="searchInput"
         ></q-input>
