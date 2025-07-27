@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "host": "vite --host"
+    "host": "vite --host",
+    "deploy": "gh-pages -d dist -m",
+    "help": "gh-pages --help"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.17",
@@ -26,6 +28,7 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "eslint": "^9.20.1",
     "eslint-plugin-vue": "^9.32.0",
+    "gh-pages": "^6.3.0",
     "prettier": "^3.5.1",
     "sass-embedded": "^1.85.1",
     "vite": "^6.1.0",
