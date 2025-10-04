@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { getDistanceBetweenPoints } from '@/features/utilities'
 import { useNoteStore } from '@/stores/noteStore'
 import { useUserStore } from '@/stores/userStore'
@@ -124,6 +124,13 @@ function deletePhoto(e) {
 
   return emits('update:note', note.value)
 }
+
+// 當 uploader 關閉時，終止上傳
+watch(uploader, (newValue) => {
+  if (!newValue) {
+    isUploading.value = false
+  }
+})
 </script>
 
 <template>
