@@ -30,19 +30,19 @@ export const useNoteStore = defineStore('noteStore', () => {
     notes.value = []
   }
 
-  async function getCityFromPlaceId(placeId) {
-    // console.log('Calling geocoding')
-    const { Geocoder } = await google.maps.importLibrary('geocoding')
-    const geocoder = new Geocoder()
-    const res = await geocoder.geocode({ placeId: placeId })
-    const addressComponents = res.results[0].address_components
+  // async function getCityFromPlaceId(placeId) {
+  //   // console.log('Calling geocoding')
+  //   const { Geocoder } = await google.maps.importLibrary('geocoding')
+  //   const geocoder = new Geocoder()
+  //   const res = await geocoder.geocode({ placeId: placeId })
+  //   const addressComponents = res.results[0].address_components
 
-    const cityComponent = addressComponents.find(
-      (part) => part.types[0] === 'administrative_area_level_1',
-    )
+  //   const cityComponent = addressComponents.find(
+  //     (part) => part.types[0] === 'administrative_area_level_1',
+  //   )
 
-    return cityComponent.long_name
-  }
+  //   return cityComponent.long_name
+  // }
 
   function formatNotesFromGoogle(notes) {
     return notes.map((note) => {
@@ -86,12 +86,12 @@ export const useNoteStore = defineStore('noteStore', () => {
   async function updateNotesToGoogleSheet(newNote) {
     isSynchronize.value = true
 
-    const pendingNote = await formatNoteToGoogle(newNote)
-    const res = await noteSheetAPI.UPDATE(pendingNote)
-    // console.log(res)
-    await getDataFromGoogleSheet()
+    const pendingNote = formatNoteToGoogle(newNote)
+    await noteSheetAPI.UPDATE(pendingNote)
 
     isSynchronize.value = false
+
+    await getDataFromGoogleSheet()
   }
 
   // default at Taipei Main Station
@@ -160,18 +160,17 @@ export const useNoteStore = defineStore('noteStore', () => {
   async function deleteNoteOnGoogleSheet(note) {
     isSynchronize.value = true
 
-    const res = await noteSheetAPI.DELETE(note)
-    // console.log(res)
-    await getDataFromGoogleSheet()
+    await noteSheetAPI.DELETE(note)
 
     isSynchronize.value = false
+
+    await getDataFromGoogleSheet()
   }
 
   async function changePrivacy() {
     isSynchronize.value = true
 
-    const res = await noteSheetAPI.CHANGEPRIVACY()
-    // console.log(res)
+    await noteSheetAPI.CHANGEPRIVACY()
 
     isSynchronize.value = false
   }
