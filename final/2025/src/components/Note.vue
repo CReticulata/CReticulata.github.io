@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/userStore'
 import PhotoCarouselBtns from './PhotoCarouselBtns.vue'
 // import imgurAPI from '@/features/imgurAPI'
 import imgbbAPI from '@/features/imgbbAPI'
+import imageCompression from 'browser-image-compression'
 
 const noteStore = useNoteStore()
 const userStore = useUserStore()
@@ -96,10 +97,21 @@ function onSave() {
 async function upload() {
   isUploading.value = true
   const uploadedPhotos = []
-  for (const file of files.value) {
-    const res = await imgbbAPI.POST(file)
-    uploadedPhotos.push(res.data.url)
+
+  // 壓縮選項
+  const options = {
+    maxWidthOrHeight: 1920, // 最大寬高
+    useWebWorker: true, // 使用 Web Worker 避免阻塞主線程
   }
+
+  // 先壓縮所有圖片
+  const compressedFiles = await Promise.all(
+    files.value.map((file) => imageCompression(file, options)),
+  )
+
+  // 再上傳
+  const responses = await Promise.all(compressedFiles.map((file) => imgbbAPI.POST(file)))
+  uploadedPhotos.push(...responses.map((res) => res.data.url))
 
   note.value.photos = [...note.value.photos, ...uploadedPhotos].slice(0, 3)
   isUploading.value = false
