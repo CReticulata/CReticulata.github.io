@@ -67,7 +67,7 @@ export const useNoteStore = defineStore('noteStore', () => {
   }
 
   async function getDataFromGoogleSheet() {
-    isSynchronize.value = true
+    // isSynchronize.value = true
 
     const res = await noteSheetAPI.GET()
 
@@ -80,7 +80,7 @@ export const useNoteStore = defineStore('noteStore', () => {
       isPublic: res.privacy === 'public',
     }
 
-    isSynchronize.value = false
+    // isSynchronize.value = false
   }
 
   async function updateNotesToGoogleSheet(newNote) {
