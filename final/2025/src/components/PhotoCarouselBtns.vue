@@ -2,7 +2,6 @@
 import { ref, computed, watch } from 'vue'
 import { dom, useQuasar } from 'quasar'
 // import imgurAPI from '@/features/imgurAPI'
-import imgbbAPI from '@/features/imgbbAPI'
 
 const $q = useQuasar()
 const showLoading = () => {
@@ -124,14 +123,19 @@ function deletePhoto() {
   return emits('delete:photo', photos)
 }
 
-// imgbb 版本
 async function getOriginalWidthAndHeightOfPhotos(photos) {
   const promises = photos.map(async (photo) => {
-    const res = await imgbbAPI.POST(photo)
-    return {
-      width: res.data.width,
-      height: res.data.height,
-    }
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        resolve({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        })
+      }
+      img.onerror = reject
+      img.src = photo
+    })
   })
 
   const results = await Promise.all(promises)
@@ -175,7 +179,12 @@ watch(
         :style="`width: ${widthAndHeightOfPhotos[slide].width}px; height: ${widthAndHeightOfPhotos[slide].height}px`"
         class="carousel-dialog"
       >
-        <q-carousel-slide v-for="(photo, index) in photos" :name="index" :img-src="photo" />
+        <q-carousel-slide
+          v-for="(photo, index) in photos"
+          :name="index"
+          :img-src="photo"
+          :key="index"
+        />
 
         <template v-if="deletable" v-slot:control>
           <q-carousel-control position="bottom-right" :offset="[18, 18]">
