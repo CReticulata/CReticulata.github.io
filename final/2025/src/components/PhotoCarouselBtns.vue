@@ -165,7 +165,7 @@ watch(
       @click="openCarousel(index)"
     >
       <q-avatar size="36px">
-        <img :src="photo" />
+        <img :src="photo" loading="lazy" />
       </q-avatar>
     </q-btn>
 
