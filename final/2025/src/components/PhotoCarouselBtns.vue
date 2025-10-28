@@ -124,8 +124,11 @@ function deletePhoto() {
 }
 
 async function getOriginalWidthAndHeightOfPhotos(photos) {
-  const promises = photos.map(async (photo) => {
-    return new Promise((resolve, reject) => {
+  const results = []
+
+  // 序列載入，避免同時發送多個請求
+  for (const photo of photos) {
+    const result = await new Promise((resolve, reject) => {
       const img = new Image()
       img.onload = () => {
         resolve({
@@ -136,9 +139,9 @@ async function getOriginalWidthAndHeightOfPhotos(photos) {
       img.onerror = reject
       img.src = photo
     })
-  })
+    results.push(result)
+  }
 
-  const results = await Promise.all(promises)
   originalWidthAndHeightOfPhotos.value = results
 }
 

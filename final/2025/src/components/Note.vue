@@ -109,9 +109,11 @@ async function upload() {
     files.value.map((file) => imageCompression(file, options)),
   )
 
-  // 再上傳
-  const responses = await Promise.all(compressedFiles.map((file) => imgbbAPI.POST(file)))
-  uploadedPhotos.push(...responses.map((res) => res.data.url))
+  // 序列上傳，避免同時發送多個請求
+  for (const file of compressedFiles) {
+    const res = await imgbbAPI.POST(file)
+    uploadedPhotos.push(res.data.url)
+  }
 
   note.value.photos = [...note.value.photos, ...uploadedPhotos].slice(0, 3)
   isUploading.value = false
