@@ -5,7 +5,8 @@ import { useNoteStore } from '@/stores/noteStore'
 import { useUserStore } from '@/stores/userStore'
 import PhotoCarouselBtns from './PhotoCarouselBtns.vue'
 // import imgurAPI from '@/features/imgurAPI'
-import imgbbAPI from '@/features/imgbbAPI'
+// import imgbbAPI from '@/features/imgbbAPI'
+import supabaseAPI from '@/features/supabaseAPI'
 import imageCompression from 'browser-image-compression'
 
 const noteStore = useNoteStore()
@@ -111,8 +112,10 @@ async function upload() {
 
   // 序列上傳，避免同時發送多個請求
   for (const file of compressedFiles) {
-    const res = await imgbbAPI.POST(file)
-    uploadedPhotos.push(res.data.url)
+    const res = await supabaseAPI.POST(file)
+    uploadedPhotos.push(
+      `https://yhbtdswgzercvhikcfkp.supabase.co/storage/v1/object/public/${res.data.fullPath}`,
+    )
   }
 
   note.value.photos = [...note.value.photos, ...uploadedPhotos].slice(0, 3)
