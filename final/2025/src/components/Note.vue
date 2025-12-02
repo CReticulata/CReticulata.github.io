@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { copyToClipboard } from 'quasar'
 import { getDistanceBetweenPoints } from '@/features/utilities'
 import { useNoteStore } from '@/stores/noteStore'
 import { useUserStore } from '@/stores/userStore'
@@ -130,6 +131,12 @@ function deletePhoto(e) {
   return emits('update:note', note.value)
 }
 
+function handleCopyAndGoToGoogle() {
+  console.log(note.value)
+  copyToClipboard(`😃 優點：\n${note.value.pros}\n\n🫤 缺點：\n${note.value.cons}`)
+  window.open(`https://search.google.com/local/writereview?placeid=${note.value.id}`, '_blank')
+}
+
 // 當 uploader 關閉時，終止上傳
 watch(uploader, (newValue) => {
   if (!newValue) {
@@ -245,6 +252,19 @@ watch(uploader, (newValue) => {
                 :deletable="!isOthers"
               ></PhotoCarouselBtns>
             </q-card-section>
+            <q-card-section v-if="!isOthers" class="row q-gutter-x-xs">
+              <q-btn
+                icon="sym_o_export_notes"
+                label="複製內容並前往 Google 評論"
+                outline
+                rounded
+                color="brown"
+                class="fit"
+                @click="handleCopyAndGoToGoogle"
+                :disable="isOthers"
+              >
+              </q-btn>
+            </q-card-section>
           </q-card>
 
           <div v-if="note.user === noteStore.user.ID">
@@ -264,8 +284,6 @@ watch(uploader, (newValue) => {
         </q-expansion-item>
       </q-form>
     </q-card-section>
-
-    <q-separator />
 
     <q-dialog v-model="uploader" class="uploader">
       <q-card>
