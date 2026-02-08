@@ -308,7 +308,7 @@ function setNote({ placeId, storeName, location, googlemapURL, address, city }) 
 function getRegion(adr) {
   const parser = new DOMParser()
   const doc = parser.parseFromString(adr, 'text/html')
-  const regionElement = doc.querySelector('.region')
+  const regionElement = doc.querySelector('.region') || doc.querySelector('.locality')
   return regionElement.textContent
 }
 
