@@ -63,6 +63,7 @@ async function initMap() {
 
   map.addListener('click', (mapsMouseEvent) => {
     if (mapsMouseEvent.placeId) {
+      mapsMouseEvent.stop() // 阻止 Google Maps 預設的 POI info window
       getPlaceByIdAndShowInfoWindow(mapsMouseEvent.placeId, map)
     }
   })
@@ -98,7 +99,7 @@ async function setMarkers() {
   })
 
   markers.forEach((marker) => {
-    marker.addEventListener('click', () => {
+    marker.addEventListener('gmp-click', () => {
       if (marker.placeId) {
         getPlaceByIdAndShowInfoWindow(marker.placeId, map)
       }
