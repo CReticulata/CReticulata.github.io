@@ -85,6 +85,12 @@ async function setMarkers() {
     tomatoImg.src = new URL('/favicon-tomato.png', import.meta.url).href
     tomato.appendChild(tomatoImg)
 
+    // 2. 文字標籤
+    const label = document.createElement('span')
+    label.classList.add('tomato-label')
+    label.textContent = note.storeName
+    tomato.appendChild(label)
+
     const marker = new AdvancedMarkerElement({
       map: map,
       position: { lat: note.location.lat, lng: note.location.lng },
@@ -494,6 +500,31 @@ watch(
     width: 20px;
     height: 20px;
     opacity: 0.8;
+  }
+
+  .tomato-label {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%); // 完美水平置中
+
+    // 標籤樣式
+    background-color: rgba($white, 0.9);
+    color: $brown-7;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    white-space: nowrap; // 防止店名斷行
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+    // 優化：避免文字遮擋點擊事件
+    pointer-events: none;
+
+    // 可選：當文字太長時隱藏
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
