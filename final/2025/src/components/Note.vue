@@ -137,9 +137,28 @@ function handleCopyAndGoToGoogle() {
   window.open(`https://search.google.com/local/writereview?placeid=${note.value.id}`, '_blank')
 }
 
-// 當 uploader 關閉時，終止上傳
+function onPaste(e) {
+  if (!e.clipboardData) return
+  const imageItems = Array.from(e.clipboardData.items).filter(
+    (item) => item.kind === 'file' && item.type.startsWith('image/'),
+  )
+  if (imageItems.length === 0) return
+
+  e.preventDefault()
+  const newFiles = imageItems.map((item, i) => {
+    const file = item.getAsFile()
+    const ext = file.type.split('/')[1] || 'png'
+    return new File([file], `pasted-${Date.now()}-${i}.${ext}`, { type: file.type })
+  })
+  files.value = [...files.value, ...newFiles].slice(0, 3)
+}
+
+// 當 uploader 開關時，管理 paste 監聽與上傳狀態
 watch(uploader, (newValue) => {
-  if (!newValue) {
+  if (newValue) {
+    window.addEventListener('paste', onPaste)
+  } else {
+    window.removeEventListener('paste', onPaste)
     isUploading.value = false
   }
 })
