@@ -69,6 +69,21 @@ async function initMap() {
   })
 }
 
+function getTomatoImgSrc(note) {
+  let file
+  if (note.foodScore === 0 || note.serviceScore === 0) {
+    file = '/tomato-grey.png'
+  } else {
+    const score = note.foodScore + note.serviceScore
+    if (score >= 9) file = '/tomato-red.png'
+    else if (score >= 7) file = '/tomato-yellow.png'
+    else if (score >= 5) file = '/tomato-green.png'
+    // else if (score >= 3) file = '/tomato-blue.png'
+    else file = '/tomato-black.png'
+  }
+  return new URL(file, import.meta.url).href
+}
+
 async function setMarkers() {
   const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
 
@@ -82,7 +97,7 @@ async function setMarkers() {
     const tomato = document.createElement('div')
     tomato.classList.add('tomato')
     const tomatoImg = document.createElement('img')
-    tomatoImg.src = new URL('/favicon-tomato.png', import.meta.url).href
+    tomatoImg.src = getTomatoImgSrc(note)
     tomato.appendChild(tomatoImg)
 
     // 2. 文字標籤
@@ -491,7 +506,7 @@ watch(
   height: 28px;
   border-radius: 50%;
   background-color: $white;
-  border: 2px solid $red;
+  border: 2px solid $brown-5;
   display: flex;
   justify-content: center;
   align-items: center;
