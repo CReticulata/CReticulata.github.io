@@ -70,6 +70,10 @@ async function initMap() {
 }
 
 function getTomatoImgSrc(note) {
+  const ownNote = noteStore.notes.find(
+    (n) => n.id === note.id && n.user === noteStore.user.ID,
+  )
+  note = ownNote || note
   let file
   if (note.foodScore === 0 || note.serviceScore === 0) {
     file = '/tomato-grey.png'
