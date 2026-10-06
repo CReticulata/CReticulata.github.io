@@ -192,6 +192,7 @@ watch(uploader, (newValue) => {
           round
           icon="fa-solid fa-location-dot"
           :href="note.googlemapURL"
+          target="_blank"
         ></q-btn>
       </div>
     </q-card-section>
